@@ -81,6 +81,8 @@ neoForge {
     runs {
         client {
             client()
+            // WP-06: the in-repo demo addon (docs/design.md §9.1), dev runs only
+            systemProperty 'hstglabs.demo', 'true'
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
@@ -88,6 +90,8 @@ neoForge {
         server {
             server()
             programArgument '--nogui'
+            // WP-06: the in-repo demo addon (docs/design.md §9.1), dev runs only
+            systemProperty 'hstglabs.demo', 'true'
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
@@ -96,6 +100,8 @@ neoForge {
         // The gametest system is also enabled by default for other run configs under the /test command.
         gameTestServer {
             type = "gameTestServer"
+            // WP-06: the in-repo demo addon (docs/design.md §9.1), dev runs only
+            systemProperty 'hstglabs.demo', 'true'
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 

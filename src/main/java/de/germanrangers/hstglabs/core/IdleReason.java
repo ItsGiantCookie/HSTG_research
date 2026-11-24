@@ -1,5 +1,6 @@
 package de.germanrangers.hstglabs.core;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -18,6 +19,9 @@ public record IdleReason(String id, String detail) {
     public static final String LAB_TIER = NAMESPACE + "lab_tier";
     public static final String LAB_REQUIREMENTS = NAMESPACE + "lab_requirements";
     public static final String MISSING_INGREDIENTS = NAMESPACE + "missing_ingredients";
+    /** Ids of every built-in reason, registered in the API's idle reason registry (§9.2). */
+    public static final List<String> BUILT_IN = List.of(NO_RESEARCH.id(), BLOCKED.id(), LAB_TIER, LAB_REQUIREMENTS,
+          NO_POWER.id(), CAP_REACHED.id(), MISSING_INGREDIENTS);
 
     public IdleReason {
         Objects.requireNonNull(id, "id");

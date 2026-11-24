@@ -45,5 +45,13 @@
   "hstg_labs.gui.upgrades.no_selection": "No selection.",
   "hstg_labs.gui.upgrades.supported": "Supported:",
   "hstg_labs.gui.upgrade.uninstall": "Uninstall",
-  "hstg_labs.gui.upgrade.uninstall.tooltip": "Uninstalls a single upgrade, hold shift to uninstall all."
+  "hstg_labs.gui.upgrade.uninstall.tooltip": "Uninstalls a single upgrade, hold shift to uninstall all.",
+  "hstg_labs.idle.no_research": "No research queued",
+  "hstg_labs.idle.blocked": "Research blocked: the stage refused to unlock",
+  "hstg_labs.idle.lab_tier": "Needs lab tier %s",
+  "hstg_labs.idle.lab_requirements": "Missing lab: %s",
+  "hstg_labs.idle.no_power": "No power",
+  "hstg_labs.idle.cap_reached": "Every unit is already claimed",
+  "hstg_labs.idle.missing_ingredients": "Missing ingredient: %s",
+  "hstg_labs.demo.idle.no_mana": "No mana (demo)"
 }

@@ -56,6 +56,62 @@ final class BoundaryRules {
         return HS_ALLOWLIST.stream().anyMatch(allowed -> ref.equals(allowed) || ref.startsWith(allowed + "."));
     }
 
+    static final String OURS = SourceScanner.BASE + ".";
+    static final String OUR_API = OURS + "api";
+    /** Feature packages built ON the api (CLAUDE.md "Our public API"): they import nothing of ours outside api. */
+    static final List<String> API_CLIENT_PACKAGES = List.of("compat", "devui", "demo");
+
+    /** No public api signature may name an internal type: api.. references nothing of ours outside api. */
+    static List<String> apiViolations(List<Source> sources) {
+        List<String> out = new ArrayList<>();
+        for (Source s : sources) {
+            if (s.inPackage("api")) {
+                for (String ref : s.references(OURS)) {
+                    if (!isApi(ref)) {
+                        out.add(SourceScanner.describe(s, "api names an internal type: " + ref));
+                    }
+                }
+            }
+        }
+        return out;
+    }
+
+    /** compat/, devui/ and demo/ import nothing of ours outside api. */
+    static List<String> apiClientViolations(List<Source> sources) {
+        List<String> out = new ArrayList<>();
+        for (Source s : sources) {
+            if (API_CLIENT_PACKAGES.stream().anyMatch(s::inPackage)) {
+                for (String ref : s.references(OURS)) {
+                    if (!isApi(ref)) {
+                        out.add(SourceScanner.describe(s, s.relativePackage() + " uses ours outside api: " + ref));
+                    }
+                }
+            }
+        }
+        return out;
+    }
+
+    /** §9.1 + CLAUDE.md: every api type has javadoc and is marked {@code @ApiStatus.Experimental} until 1.0. */
+    static List<String> apiMarkingViolations(List<Source> sources) {
+        List<String> out = new ArrayList<>();
+        for (Source s : sources) {
+            if (!s.inPackage("api") || s.path().getFileName().toString().equals("package-info.java")) {
+                continue;
+            }
+            if (!s.raw().contains("/**")) {
+                out.add(SourceScanner.describe(s, "api type without javadoc"));
+            }
+            if (!s.code().contains("ApiStatus.Experimental")) {
+                out.add(SourceScanner.describe(s, "api type not marked @ApiStatus.Experimental"));
+            }
+        }
+        return out;
+    }
+
+    private static boolean isApi(String ref) {
+        return ref.equals(OUR_API) || ref.startsWith(OUR_API + ".");
+    }
+
     /** Core purity: core/ is JDK only. */
     static List<String> coreViolations(List<Source> sources) {
         List<String> out = new ArrayList<>();

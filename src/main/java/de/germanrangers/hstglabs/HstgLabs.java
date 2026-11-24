@@ -1,8 +1,11 @@
 package de.germanrangers.hstglabs;
 
+import de.germanrangers.hstglabs.demo.DemoAddon;
 import de.germanrangers.hstglabs.hs.HsVersion;
 import de.germanrangers.hstglabs.packet.CycleFacePayload;
 import de.germanrangers.hstglabs.packet.LabButtonPayload;
+import de.germanrangers.hstglabs.research.ApiRegistries;
+import de.germanrangers.hstglabs.research.BuiltInApi;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.IEventBus;
@@ -22,6 +25,13 @@ public final class HstgLabs {
         modBus.addListener(LabButtonPayload::register);
         modBus.addListener(HstgLabs::addToCreativeTabs);
         modBus.addListener((FMLCommonSetupEvent event) -> HsVersion.logAtStartup());
+        // WP-06: our built-ins go through the public API like any addon; then the §9.2 registries
+        // fire once, after parallel setup has returned, and freeze.
+        BuiltInApi.register(modBus);
+        if (DemoAddon.enabled()) {
+            DemoAddon.register(modBus);
+        }
+        modBus.addListener((FMLCommonSetupEvent event) -> event.enqueueWork(ApiRegistries::dispatch));
     }
 
     public static ResourceLocation rl(String path) {
