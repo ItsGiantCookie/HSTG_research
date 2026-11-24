@@ -16,8 +16,5 @@ public final class ClientSetup {
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(Registration.RESEARCH_LAB_MENU.get(), ResearchLabScreen::new);
-        // WP-05a spike (throwaway)
-        event.register(de.germanrangers.hstglabs.mek.spike.SpikeMekLab.CONTAINER.get(),
-              de.germanrangers.hstglabs.mek.spike.client.SpikeMekLabScreen::new);
     }
 }

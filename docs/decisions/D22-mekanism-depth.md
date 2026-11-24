@@ -142,7 +142,7 @@ Side-config and upgrade windows stay ours, because Mekanism's need its tile base
 Committed once so it can be checked out and looked at, then deleted in the next commit of this branch
 (WP-05a acceptance). The facts in docs/mek-api-facts.md stay.
 
-To see variant A's screen: `git checkout <spike commit>`, `./gradlew runClient`,
+To see variant A's screen: `git checkout 998da48`, `./gradlew runClient`,
 `/give @s hstg_labs:spike_mek_lab`. The block has no model or lang, so it renders as the missing
 texture and shows a raw name.
 

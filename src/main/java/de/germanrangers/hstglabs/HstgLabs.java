@@ -17,9 +17,6 @@ public final class HstgLabs {
 
     public HstgLabs(IEventBus modBus) {
         Registration.register(modBus);
-        // WP-05a spike (throwaway): both variants of the D22 experiment
-        de.germanrangers.hstglabs.mek.spike.SpikeMekLab.register(modBus);
-        de.germanrangers.hstglabs.lab.spike.SpikeApiLab.register(modBus);
         modBus.addListener(ModCapabilities::register);
         modBus.addListener(CycleFacePayload::register);
         modBus.addListener(LabButtonPayload::register);
