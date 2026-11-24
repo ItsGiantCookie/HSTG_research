@@ -1,0 +1,6 @@
+{
+  "parent": "hstg_labs:block/data_cable_core",
+  "textures": {
+    "cable": "hstg_labs:block/data_cable/elite"
+  }
+}

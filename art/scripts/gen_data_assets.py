@@ -1,4 +1,4 @@
-"""Generate the data-network assets for hstg_research (mekstyle 1.2).
+"""Generate the data-network assets for hstg_labs (mekstyle 1.2).
 
 Textures (own work unless noted):
   item/research_sample.png       vial with sample, steel cap
@@ -28,9 +28,9 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
 RES = ROOT / "src/main/resources"
-ASSETS = RES / "assets/hstg_research"
+ASSETS = RES / "assets/hstg_labs"
 TEX = ASSETS / "textures"
-MODID = "hstg_research"
+MODID = "hstg_labs"
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import gen_research_lab_textures as lab  # noqa: E402  (screen helpers + provenance writer)

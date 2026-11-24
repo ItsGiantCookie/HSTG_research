@@ -1,0 +1,30 @@
+# Backlog
+
+Ideas and carried-over work outside the current work package. Each entry names the WP that should
+pick it up (docs/design.md §13).
+
+## Prototype integration (pre-M0 code, renamed in WP-01)
+
+Before M0 there was a working prototype (`hstg_research`): a Mekanism-style lab that turned
+"research samples" into data, tiered data cables and a dummy data consumer. WP-01 moved it into the
+§6.1 packages unchanged. Nothing in it is part of the design's API yet; each piece below is absorbed,
+reshaped or deleted by the WP named.
+
+| Prototype piece | Now at | Absorbed by | What changes |
+| --- | --- | --- | --- |
+| Research lab block, block entity, menu (`lab/ResearchLab*`) | `lab/` | WP-09 basic lab (`hstg_labs:basic_lab`) | Consumes science-pack sets per unit instead of samples; speed, slots, tier, energy from its lab type; ticks a `LabCycle` claimed from `ResearchManager` |
+| Lab screen (`client/ResearchLabScreen`) | `client/` | WP-09 / WP-10 `LabScreen` | Keeps the Mekanism look; adds current technology, progress `done/U`, ETA, queue, idle reason (§4.4) |
+| Mekanism GUI port (`mek/client/MekGui`) | `mek/client/` | WP-05a spike, WP-09, WP-16 core screen | Shared GUI pieces (9-slice, tabs, windows, bars, digital buttons). Port of Mekanism GuiUtils/GuiElement drawing, MIT header kept (§7.2 rule 4) |
+| Side config with Items / Energy / Data tabs, Configurator, auto-eject (`mek/config/*`, `client/PortOverlayRenderer`) | `mek/` | WP-05a decides own vs `TileComponentConfig` (D22); WP-09 for basic lab, WP-15 for consumers | Data tab goes away on the basic lab (D13: it never joins a network); kinds become id-keyed (§9.6) |
+| Upgrade window + `mek/UpgradeComponent` (Speed, Energy, Mekanism formulas) | `mek/` | WP-09 | Effects move into the modifier registry (§5.8, §9.2) instead of being applied directly |
+| Joule buffer, energy slot, Mekanism strict-energy capability by name | `lab/`, `ModCapabilities` | WP-09 (D6, D23) | `energy_per_tick` from the lab type; FE accepted too |
+| Tiered data cables, `grid/DataNetwork`, `grid/DataNetworkManager` (join, merge, BFS split, unload handling) | `grid/` | WP-15 Research Cable + `GridManager` | Network becomes a membership graph of `NODE` capabilities, no data buffer; size cap `grid_max_nodes`; open question for WP-15: keep cable tiers or one cable |
+| `grid/IDataHandler`, `hstg_labs:data_handler` capability | `grid/`, `ModCapabilities` | WP-06 `ResearchCapabilities` | Replaced by CONTROLLER / CONSUMER / WORKER / NODE |
+| Data consumer block (dummy sink) | `grid/` | WP-15 | Deleted; Pack Consumer is a different role |
+| `lab/ResearchRecipe` (sample + energy + time → data + vial), research sample / empty vial items | `lab/` | WP-07 / WP-20 | Replaced by technology cost and ingredient types; the items may stay as testpack content or go |
+| Art pipeline (`art/scripts`, provenance, mekstyle linter) | `art/` | all asset work | Kept as is |
+
+## Other
+
+- Ask the History Stages authors whether the "HSTG" prefix is welcome (D1 follow-up).
+- `run/eula.txt` is not created by the build; set `eula=true` yourself before `./gradlew runServer`.

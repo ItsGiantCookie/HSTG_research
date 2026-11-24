@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "hstg_labs:block/data_consumer"
+    },
+    "facing=east": {
+      "model": "hstg_labs:block/data_consumer",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "hstg_labs:block/data_consumer",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "hstg_labs:block/data_consumer",
+      "y": 270
+    }
+  }
+}

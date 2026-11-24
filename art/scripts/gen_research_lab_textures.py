@@ -1,4 +1,4 @@
-"""Generate the derived/own textures for hstg_research:research_lab (mekstyle 1.2).
+"""Generate the derived/own textures for hstg_labs:research_lab (mekstyle 1.2).
 
 Inputs (imported from Mekanism via import_mekanism.py, see art/provenance.yaml):
   textures/block/research_lab/side.png    (Mekanism energized_smelter/side.png)
@@ -21,7 +21,7 @@ from pathlib import Path
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
-TEX = ROOT / "src/main/resources/assets/hstg_research/textures/block"
+TEX = ROOT / "src/main/resources/assets/hstg_labs/textures/block"
 PROV = ROOT / "art/provenance.yaml"
 MEK = "https://github.com/mekanism/Mekanism"
 

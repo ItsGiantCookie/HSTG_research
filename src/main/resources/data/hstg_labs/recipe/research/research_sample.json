@@ -1,0 +1,13 @@
+{
+  "type": "hstg_labs:research",
+  "ingredient": {
+    "item": "hstg_labs:research_sample"
+  },
+  "result": {
+    "id": "hstg_labs:empty_sample_vial",
+    "count": 1
+  },
+  "data": 250,
+  "energy_per_tick": 50,
+  "duration": 100
+}

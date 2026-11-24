@@ -1,7 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'net.neoforged.moddev' version '2.0.148'
+    id 'net.neoforged.moddev' version '2.0.140'
     id 'idea'
 }
 
@@ -27,10 +27,32 @@ sourceSets.main.resources {
 }
 
 repositories {
-    // Mekanism (API + runtime jar)
+    // docs/design.md §2. Each repository is scoped to the groups it serves.
     exclusiveContent {
-        forRepository { maven { url = 'https://modmaven.dev/' } }
+        forRepository { maven { url = 'https://api.modrinth.com/maven'; name = 'Modrinth' } }
+        filter { includeGroup 'maven.modrinth' }               // History Stages
+    }
+    exclusiveContent {
+        forRepository { maven { url = 'https://cursemaven.com'; name = 'CurseMaven' } }
+        filter { includeGroup 'curse.maven' }                  // Lootr (required by HS)
+    }
+    exclusiveContent {
+        forRepository { maven { url = 'https://modmaven.dev/'; name = 'ModMaven' } }
         filter { includeGroup 'mekanism' }
+    }
+    maven {
+        name = 'KubeJS'
+        url = 'https://maven.latvian.dev/releases'
+        content {
+            includeGroup 'dev.latvian.mods'
+            includeGroup 'dev.latvian.apps'
+        }
+    }
+    maven {
+        // KubeJS pulls animated-gif-lib-for-java at runtime; it only lives on JitPack.
+        name = 'JitPack'
+        url = 'https://jitpack.io'
+        content { includeGroup 'com.github.rtyley' }
     }
 }
 
@@ -120,32 +142,29 @@ configurations {
 }
 
 dependencies {
-    // Mekanism is a required dependency: compile against its public API only,
-    // run the full mod in dev. Its side-config internals are deliberately not used.
-    compileOnly "mekanism:Mekanism:${mekanism_version}:api"
-    localRuntime "mekanism:Mekanism:${mekanism_version}"
+    // History Stages: required. Only the hs/ package may import it (docs/design.md §7.1).
+    implementation "maven.modrinth:history-stages:${historystages_version}"
+    // Lootr: HS will not load without it, dev runs included.
+    runtimeOnly "curse.maven:lootr-361276:${lootr_curse_file}"
 
-    // Example optional mod dependency with JEI
-    // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
-    // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
-    // compileOnly "mezz.jei:jei-${mc_version}-neoforge-api:${jei_version}"
-    // We add the full version to localRuntime, not runtimeOnly, so that we do not publish a dependency on it
-    // localRuntime "mezz.jei:jei-${mc_version}-neoforge:${jei_version}"
+    // Mekanism: required (D21). Full jar: D22 allows internals, but only inside the mek/ package.
+    implementation "mekanism:Mekanism:${mekanism_version}"
 
-    // Example mod dependency using a mod jar from ./libs with a flat dir repository
-    // This maps to ./libs/coolmod-${mc_version}-${coolmod_version}.jar
-    // The group id is ignored when searching -- in this case, it is "blank"
-    // implementation "blank:coolmod-${mc_version}:${coolmod_version}"
+    // KubeJS: optional, like in HS; compat/kubejs is loaded only when KubeJS is present.
+    compileOnly "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
+    localRuntime "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
 
-    // Example mod dependency using a file as dependency
-    // implementation files("libs/coolmod-${mc_version}-${coolmod_version}.jar")
+    // Unit + guard tests (docs/design.md §14): plain JUnit 5, no Minecraft.
+    testImplementation platform("org.junit:junit-bom:${junit_version}")
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
 
-    // Example project dependency using a sister or child project:
-    // implementation project(":myproject")
-
-    // For more info:
-    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
-    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+tasks.named('test', Test) {
+    useJUnitPlatform()
+    // guard tests scan the source tree relative to the project directory
+    systemProperty 'hstglabs.projectDir', project.projectDir.absolutePath
+    inputs.dir('src/main/java')
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -160,7 +179,12 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mod_name               : mod_name,
             mod_license            : mod_license,
             mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description,
+            neo_version_range      : neo_version_range,
+            historystages_version_range: historystages_version_range,
             mekanism_version_range : mekanism_version_range,
+            kubejs_version_range   : kubejs_version_range,
     ]
     inputs.properties replaceProperties
     expand replaceProperties
@@ -185,6 +209,10 @@ publishing {
             url "file://${project.projectDir}/repo"
         }
     }
+}
+
+tasks.named('jar', Jar) {
+    from('LICENSE')
 }
 
 tasks.withType(JavaCompile).configureEach {

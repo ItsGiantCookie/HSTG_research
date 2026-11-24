@@ -1,0 +1,6 @@
+{
+  "parent": "hstg_labs:block/data_cable_item",
+  "textures": {
+    "cable": "hstg_labs:block/data_cable/basic"
+  }
+}

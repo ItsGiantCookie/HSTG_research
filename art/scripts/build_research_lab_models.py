@@ -23,8 +23,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 RAW = ROOT / "art/blockbench/research_lab.export.json"
-ASSETS = ROOT / "src/main/resources/assets/hstg_research"
-NS = "hstg_research"
+ASSETS = ROOT / "src/main/resources/assets/hstg_labs"
+NS = "hstg_labs"
 
 TEXTURES = {  # Blockbench texture name -> (model key, resource path)
     "front": ("front", "block/research_lab/front"),

@@ -1,0 +1,6 @@
+{
+  "parent": "hstg_labs:block/research_lab",
+  "textures": {
+    "front": "hstg_labs:block/data_consumer/front"
+  }
+}

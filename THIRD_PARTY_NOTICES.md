@@ -5,6 +5,12 @@
 Some textures are copied or derived from Mekanism (https://github.com/mekanism/Mekanism), commit 4255aa7156dace1dd379c8bc6d52ab0275bd659c.
 See art/provenance.yaml for the exact files.
 
+Code derived from Mekanism (tag v1.21.1-10.7.19.85), each file carrying the MIT header below
+(docs/design.md §7.2 rule 4):
+
+- `src/main/java/de/germanrangers/hstglabs/mek/client/MekGui.java`: GUI drawing ported from
+  `mekanism.client.gui.GuiUtils`, `GuiElement` and `BasicColorButton`.
+
 ```
 MIT License
 
