@@ -33,3 +33,16 @@ reshaped or deleted by the WP named.
 - WP-08: §4.1 says a `BLOCKED` technology "moves the queue on". `ResearchQueue` supports both
   readings (`move(id, size)` to send it to the back, or `remove`); WP-08 must pick one. Under D18 a
   blocked head that stays at the head would idle every lab.
+- WP-05 chose the order of idle reasons per slot (§5.7 lists them, it does not order them):
+  `NO_RESEARCH`, `BLOCKED`, `LAB_TIER`, `LAB_REQUIREMENTS`, `NO_POWER`, `CAP_REACHED`,
+  `MISSING_INGREDIENTS`, so the first reason shown is the one the player has to fix first. Change in
+  `core.SiteScheduler` if playtests say otherwise.
+- WP-07 validation: warn when two ingredient lines of one technology can match the same stock (an
+  item and a tag holding it). `core.Arbiter` handles it safely (commit shortfall, roll back), but such
+  a technology needs both lines in separate stacks to ever start.
+- WP-08/09: `ResearchEvent.BeforeUnitClaim` (§9.4) is not in `core.SiteScheduler`. Fire it in the lab
+  layer before calling the scheduler, or add a claim veto callback to the scheduler then.
+- WP-09: `core.PackSource` counts amounts per ingredient key. Giving a tag-matched set back exactly
+  (which item, which NBT) is the consumer adapter's job; it should log what it took per unit.
+- WP-09/16: a unit's tick count is fixed when it starts (T / speed). A modifier or upgrade that changes
+  speed mid-unit applies from the next unit on.
