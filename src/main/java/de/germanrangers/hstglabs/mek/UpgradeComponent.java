@@ -16,7 +16,7 @@ import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Port of Mekanism's TileComponentUpgrade for the lab: an install slot that consumes Mekanism upgrade
+ * Own re-implementation (no copied code) of Mekanism's TileComponentUpgrade behaviour for the lab: an install slot that consumes Mekanism upgrade
  * items after {@value #INSTALL_TICKS} ticks, an output slot for uninstalled upgrades, and Mekanism's
  * upgrade math (MekanismUtils.getTicks / getEnergyPerTick / getMaxEnergy).
  * <p>

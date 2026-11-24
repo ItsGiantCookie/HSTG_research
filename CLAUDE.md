@@ -37,7 +37,8 @@ Mod id `hstg_labs`, package `de.germanrangers.hstglabs`, MIT (D1).
 - Server-thread only. Register only inside the matching Register...Event listener.
 
 ## Mekanism
-- Reference source: ref/Mekanism at tag v1.21.1-10.7.19.85 (read-only, git-ignored).
+- Reference source: ref/Mekanism at tag v1.21.1-10.7.19.85 (read-only, git-ignored;
+  `git clone --depth 1 --branch v1.21.1-10.7.19.85 https://github.com/mekanism/Mekanism.git ref/Mekanism`).
   Record every signature you use in docs/mek-api-facts.md (path:line).
 - Imports outside mekanism.api.** only in mek/. Our api/ may name Mekanism API
   types, never internal ones.
@@ -45,6 +46,12 @@ Mod id `hstg_labs`, package `de.germanrangers.hstglabs`, MIT (D1).
   mekanism:strict_energy_handler), not from mekanism.common.
 - MIT: copy code only where decision D22 says vendor; keep the MIT header and list
   the file in THIRD_PARTY_NOTICES.md.
+
+## KubeJS
+- Reference source: ref/KubeJS, branch 2101 (no release tags upstream), checked out at
+  ba1f722 (2026-11-15, mod_version 2101.7.2); we build against 2101.7.2-build.374.
+  `git clone --depth 1 --branch 2101 https://github.com/KubeJS-Mods/KubeJS.git ref/KubeJS`
+- compat/kubejs imports nothing of ours outside api/ (WP-17).
 
 ## Code
 - core/ is pure Java (no net.minecraft, net.neoforged, net.bananemdnsa, mekanism). Logic goes
