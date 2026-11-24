@@ -54,5 +54,8 @@
   "hstg_labs.idle.cap_reached": "Every unit is already claimed",
   "hstg_labs.idle.missing_ingredients": "Missing ingredient: %s",
   "hstg_labs.demo.idle.no_mana": "No mana (demo)",
-  "itemGroup.hstg_labs": "HSTG: Research Labs"
+  "itemGroup.hstg_labs": "HSTG: Research Labs",
+  "item.hstg_labs.science_pack": "Science Pack",
+  "item.hstg_labs.science_pack.unknown": "Unknown Science Pack (%s)",
+  "item.hstg_labs.science_pack.tier": "Tier %s"
 }

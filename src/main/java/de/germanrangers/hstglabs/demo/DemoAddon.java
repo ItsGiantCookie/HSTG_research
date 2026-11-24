@@ -106,10 +106,14 @@ public final class DemoAddon {
         return ResourceLocation.fromNamespaceAndPath(HSLabsAPI.MOD_ID, "demo_" + path);
     }
 
+    /** A complete definition in the file format (docs/design.md §8.1); its stage only exists in a pack that defines it. */
     private static JsonObject demoTech() {
-        JsonObject tech = new JsonObject();
-        tech.addProperty("stage", "demo_stage");
-        return tech;
+        return com.google.gson.JsonParser.parseString("""
+              { "stage": "hstg_labs_demo_stage",
+                "cost": { "units": 10, "unit_time": 200,
+                          "ingredients": [ { "type": "hstg_labs:demo_item", "item": "minecraft:paper", "amount": 1 } ] },
+                "rewards": [ { "type": "hstg_labs:demo_message", "text": "The demo technology is done." } ] }
+              """).getAsJsonObject();
     }
 
     private static JsonObject demoLabType() {

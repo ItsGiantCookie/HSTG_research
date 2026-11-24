@@ -165,6 +165,8 @@ dependencies {
     testImplementation platform("org.junit:junit-bom:${junit_version}")
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // tech/ JSON layer is unit-tested without Minecraft; same Gson as Minecraft 1.21.1 resolves to
+    testImplementation 'com.google.code.gson:gson:2.10.1'
 }
 
 tasks.named('test', Test) {

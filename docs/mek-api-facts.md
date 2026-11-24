@@ -86,3 +86,12 @@ option starts from verified facts. All paths relative to `ref/Mekanism/src/`.
 | Energy container | `interface IEnergyContainer extends INBTSerializable<CompoundTag>, IContentsListener` | `energy/IEnergyContainer.java:16` |
 | Test input | `MekanismAPI.CHEMICAL_REGISTRY`, `new ChemicalStack(Chemical, long)`, `IChemicalHandler.insertChemical(ChemicalStack, Action)` | `MekanismAPI.java:120`, `chemical/ChemicalStack.java:206`, `chemical/IChemicalHandler.java:121` |
 | Misc | `AutomationType.INTERNAL`, `ILangEntry` (used by variant A for the block description) | `AutomationType.java:14`, `text/ILangEntry.java:12` |
+
+## WP-07: chemical ingredient type (`mek/ChemicalIngredientType`, API only)
+
+| Need | Signature | Where |
+| --- | --- | --- |
+| Chemical by id in JSON | `public static final Codec<Holder<Chemical>> HOLDER_CODEC = MekanismAPI.CHEMICAL_REGISTRY.holderByNameCodec()` | `api/java/mekanism/api/chemical/Chemical.java:67` |
+| Chemical tags | `MekanismAPI.CHEMICAL_REGISTRY_NAME` (`ResourceKey<Registry<Chemical>>`), with vanilla `TagKey.codec` / `TagKey.create` | `api/java/mekanism/api/MekanismAPI.java:65` |
+| Holder by id (network decode) | `MekanismAPI.CHEMICAL_REGISTRY` (`DefaultedRegistry<Chemical>`), vanilla `getHolder(ResourceLocation)` | `api/java/mekanism/api/MekanismAPI.java:120` |
+| Matching | `ChemicalStack.is(Holder<Chemical>)`, `is(TagKey<Chemical>)` | `api/java/mekanism/api/chemical/ChemicalStack.java:333, 294` |

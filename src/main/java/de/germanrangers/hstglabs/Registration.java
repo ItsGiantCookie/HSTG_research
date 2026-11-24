@@ -11,8 +11,11 @@ import de.germanrangers.hstglabs.lab.ResearchLabMenu;
 import de.germanrangers.hstglabs.lab.ResearchRecipe;
 import java.util.EnumMap;
 import java.util.Map;
+import de.germanrangers.hstglabs.tech.SciencePackItem;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
@@ -107,6 +110,18 @@ public final class Registration {
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<ResearchRecipe>> RESEARCH_RECIPE_SERIALIZER =
           RECIPE_SERIALIZERS.register("research", ResearchRecipe.Serializer::new);
 
+    // --- science packs (WP-07, docs/design.md §8.2) ---
+
+    private static final DeferredRegister.DataComponents DATA_COMPONENTS =
+          DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, HstgLabs.MODID);
+
+    /** {@code hstg_labs:pack}: which pack definition a science pack stack is. */
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<ResourceLocation>> PACK_COMPONENT =
+          DATA_COMPONENTS.registerComponentType("pack", builder -> builder.persistent(ResourceLocation.CODEC)
+                .networkSynchronized(ResourceLocation.STREAM_CODEC));
+
+    public static final DeferredItem<SciencePackItem> SCIENCE_PACK = ITEMS.registerItem("science_pack", SciencePackItem::new);
+
     // --- creative tab ---
 
     private static final DeferredRegister<CreativeModeTab> CREATIVE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, HstgLabs.MODID);
@@ -154,6 +169,7 @@ public final class Registration {
         MENUS.register(modBus);
         RECIPE_TYPES.register(modBus);
         RECIPE_SERIALIZERS.register(modBus);
+        DATA_COMPONENTS.register(modBus);
         CREATIVE_TABS.register(modBus);
     }
 }

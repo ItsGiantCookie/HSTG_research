@@ -53,3 +53,20 @@ reshaped or deleted by the WP named.
   exist yet. Draw them per the mekstyle skill when the lab screen shows idle reasons.
 - WP-21: `docs/api.md` (a how-to per extension point) is not written yet; the javadoc and the demo
   addon are the reference until then.
+- WP-07 left for later (docs/design.md §8.3), each needs data that does not exist yet:
+  - **WP-09:** lab types are empty, so every reload warns `no_lab_types` until the loader exists. WP-09 also
+    has to fill `LabTypeModel.lockedBy` from HS (`StageEntry.getItems()` / `getRecipes()` naming the lab's
+    block item or recipe) so the softlock check runs on real data.
+  - **WP-09:** the warning "an ingredient no loaded consumer type accepts".
+  - **WP-09:** addon lab requirement types. They fail closed with an error until the scheduler gets an api
+    `ResearchSite` view.
+  - **WP-08:** the warnings "stage scope the owner model cannot serve" and "pedestal-deposited requirements".
+  - **WP-08:** `unlock_stage` is registered but only logs until the HS bridge calls
+    `BuiltInTypes.setStageUnlocker`.
+  - **WP-11:** stage-related problems should also go into HS's debug report (`RegisterStageChecksEvent`).
+  - **WP-13:** a pack's `model` field is parsed and kept but not used. All packs use the tinted flask.
+  - **WP-10/13:** the creative tab only lists newly synced packs after the tab is rebuilt (rejoin or a
+    change of operator status). A refresh on `PackSyncPayload` would fix that.
+- WP-07 decision to confirm: when a tech source supplies an id that a file already defines, the later one
+  wins (files, then addon sources, then KubeJS) with an `overridden` warning. D3 gives the order but not
+  whether later sources replace or only add.

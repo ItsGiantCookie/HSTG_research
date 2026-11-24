@@ -39,6 +39,25 @@ always listed here (docs/design.md §9.1). Every API type is `@ApiStatus.Experim
 - Not yet: `RegisterStructurePatternsEvent` (M5) and the §9.5 facades (`ResearchApi`, `Technologies`,
   `GridApi`, `TechEditor`, `ClientResearch`), which arrive with the features they front.
 
+### Technologies and science packs (WP-07)
+
+- **Technology files:** `config/hstg_labs/technologies/**.json` (docs/design.md §8.1).
+  - Each file is parsed on its own, and every problem is reported with its JSON path.
+  - Unknown types, `addons` and unknown fields survive a save untouched.
+  - The file is written back with sorted keys.
+- **Built-in types:**
+  - ingredients `hstg_labs:item`, `tag`, `pack`, `chemical` (Mekanism chemical or chemical tag)
+  - lab requirements `hstg_labs:lab`, `network`, `min_tier`, `all`, `any`
+  - reward `hstg_labs:unlock_stage` (wired to History Stages in WP-08)
+- **Validation (§8.3):** unknown stage, two technologies on one stage, unknown lab type or tag,
+  stage not `external`, network without a controller, and the tier ladder checks (unreachable,
+  locked starter, softlock, empty tier). Errors disable only their technology.
+- **Science packs:** `config/hstg_labs/packs/*.json` and the item `hstg_labs:science_pack` with the
+  `hstg_labs:pack` component. Its name, tier and tint come from the pack file, synced to clients.
+- **When definitions load:** at server start, on `/reload` and when History Stages reloads its stages.
+  `TechDefinitionsReloadedEvent` is fired afterwards.
+- **Creative tab** `hstg_labs:main` with every item, one stack per loaded science pack.
+
 ### Development
 
 - Demo addon (`demo/`): registers one of every extension point using only `api`. Enabled with

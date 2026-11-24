@@ -133,3 +133,11 @@ No team id in the HS api (confirms D31: key teams by the FTB Teams UUID).
 | Lootr | `implementation "curse.maven:lootr-361276:8695784"`, mods.toml `lootr [0.4,)` required | `build.gradle:161`; `src/main/templates/META-INF/neoforge.mods.toml:34-38` |
 | KubeJS | `compileOnly` + `localRuntime "dev.latvian.mods:kubejs-neoforge:2101.7.2-build.374"`; JitPack scoped to `com.github.rtyley` | `build.gradle:194-195, 48-57` |
 | GameTests | namespace via `neoforge.enabledGameTestNamespaces`, template `empty` | `build.gradle:120-122`; `gametest/AddonApiTests.java` |
+
+## WP-07: technology validation (`hs/HsStageCatalog`)
+
+| Need | Signature | Where | Notes |
+| --- | --- | --- | --- |
+| Is the stage loaded | `@Nullable public static StageEntry findStage(String stageId)` | `api/stage/StageStates.java:121-122` | `null` for an unknown id; global first, then individual |
+| Mode for D10 | `public StageMode getMode()`; `StageMode.EXTERNAL` | `data/StageEntry.java:700`, `data/StageMode.java:23` | allowlisted `data` types |
+| Revalidate on HS reload | `public class StageDefinitionsChangedEvent extends Event` | `api/stage/StageDefinitionsChangedEvent.java:22` | Javadoc (`:15-17`): posted from the server tick on a dedicated server, but from the **client tick** on a client connected to a remote server; our listener only reloads when it runs on our server's thread |
