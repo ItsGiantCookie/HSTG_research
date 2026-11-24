@@ -19,9 +19,10 @@ import net.neoforged.bus.api.IEventBus;
  *   <li>{@code hstg_labs:server}: one owner for the whole server, global stages
  *       ({@code owner_model = SERVER}).</li>
  *   <li>{@code hstg_labs:team}: the player's team, individual stages unlocked for every member
- *       ({@code owner_model = TEAM}, the default). The team id comes from a {@link TeamProvider}:
- *       FTB Teams when it is installed (WP-08 step 3), otherwise a team of one keyed by the player's
- *       UUID.</li>
+ *       ({@code owner_model = TEAM}, the default). With FTB Teams installed, {@code compat.ftbteams}
+ *       registers this id with FTB team ids; without it, this class registers a team of one keyed by
+ *       the player's UUID. FTB's own id for a player in no party is the player's UUID too, so keys stay
+ *       the same when FTB Teams is added to a world.</li>
  * </ul>
  */
 public final class BuiltInOwners {
@@ -30,52 +31,17 @@ public final class BuiltInOwners {
     public static final ResourceLocation TEAM = ResourceLocation.fromNamespaceAndPath("hstg_labs", "team");
     public static final OwnerId SERVER_OWNER = new OwnerId(SERVER, "server");
 
-    /** Where team ids and members come from. */
-    public interface TeamProvider {
-
-        /** The team key of {@code player}; the player's own UUID when they are in no team. */
-        String teamKey(UUID player, MinecraftServer server);
-
-        /** Every member of the team with this key, online or not. */
-        Collection<UUID> members(String teamKey, MinecraftServer server);
-    }
-
-    /** A team of one per player: the fallback without a team mod (D31). */
-    public static final TeamProvider SOLO = new TeamProvider() {
-        @Override
-        public String teamKey(UUID player, MinecraftServer server) {
-            return player.toString();
-        }
-
-        @Override
-        public Collection<UUID> members(String teamKey, MinecraftServer server) {
-            try {
-                return List.of(UUID.fromString(teamKey));
-            } catch (IllegalArgumentException e) {
-                return List.of();
-            }
-        }
-    };
-
-    private static volatile TeamProvider teams = SOLO;
-
     private BuiltInOwners() {
     }
 
-    public static void register(IEventBus modBus) {
+    /** {@code withTeamOfOne}: false when a team mod's compat registers {@link #TEAM} itself. */
+    public static void register(IEventBus modBus, boolean withTeamOfOne) {
         modBus.addListener(RegisterOwnerTypesEvent.class, e -> {
             e.register(SERVER, new ServerOwner());
-            e.register(TEAM, new TeamOwner());
+            if (withTeamOfOne) {
+                e.register(TEAM, new TeamOfOne());
+            }
         });
-    }
-
-    /** Replaces the team-of-one fallback, e.g. with FTB Teams. */
-    public static void setTeamProvider(TeamProvider provider) {
-        teams = provider;
-    }
-
-    public static TeamProvider teamProvider() {
-        return teams;
     }
 
     static final class ServerOwner implements OwnerType {
@@ -96,16 +62,21 @@ public final class BuiltInOwners {
         }
     }
 
-    static final class TeamOwner implements OwnerType {
+    /** Every player is their own team (D31 fallback). */
+    static final class TeamOfOne implements OwnerType {
 
         @Override
         public Optional<OwnerId> ownerOf(ServerPlayer player) {
-            return Optional.of(new OwnerId(TEAM, teams.teamKey(player.getUUID(), player.server)));
+            return Optional.of(new OwnerId(TEAM, player.getUUID().toString()));
         }
 
         @Override
         public Collection<UUID> members(OwnerId owner, MinecraftServer server) {
-            return teams.members(owner.key(), server);
+            try {
+                return List.of(UUID.fromString(owner.key()));
+            } catch (IllegalArgumentException e) {
+                return List.of();
+            }
         }
 
         @Override

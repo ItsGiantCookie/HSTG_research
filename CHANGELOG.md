@@ -77,6 +77,30 @@ always listed here (docs/design.md §9.1). Every API type is `@ApiStatus.Experim
   kinds `hstg_labs:technology` and `hstg_labs:pack` are registered through `RegisterTemplateKindsEvent`.
 - **Fix:** two `/reload`s finishing in the same tick no longer skip the second load.
 
+### Research manager, saved progress, teams (WP-08)
+
+- **History Stages:** the research manager is the only code that writes progress, and it reaches History
+  Stages only through the `hs/` bridge.
+  - **Unlocking:** a completed technology is unlocked through HS with cause `ADDON`. A global stage gets
+    one unlock; an individual stage gets one per team member, offline members included (HS syncs at
+    their next login).
+  - **Refused unlock:** the technology is marked BLOCKED, leaves the queue and keeps its progress;
+    re-adding it retries (D32).
+  - **Unlocked elsewhere** (command, quest, script): its progress is discarded.
+  - **Relock:** follows `on_relock` (D5; `KEEP` re-unlocks on re-queue).
+  - **Lost for good:** it leaves the queue.
+  - **Cost changed by a reload:** done units are kept (D7).
+- **Saved data:** `data/hstg_labs_research.dat` (schema 1) holds queue, progress, blocked and pending per
+  owner. Unreadable entries survive.
+- **Server config:** `hstg_labs-server.toml` with `queue_max`, `queue_permission`, `on_relock`,
+  `owner_model`.
+- **Owners:** `hstg_labs:server` and `hstg_labs:team`.
+  - With FTB Teams installed (optional, D31), the team is the player's FTB team.
+  - Without it, each player is a team of one.
+  - The keys are the same in both cases, so adding FTB Teams later keeps everyone's progress.
+- **Events:** `ResearchEvent.Started`, `UnitCompleted`, `Completed`, `Blocked`, `BeforeEnqueue` and
+  `QueueChanged` are now fired.
+
 ### Development
 
 - Demo addon (`demo/`): registers one of every extension point using only `api`. Enabled with

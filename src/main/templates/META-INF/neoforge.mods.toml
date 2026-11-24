@@ -45,3 +45,11 @@ description='''${mod_description}'''
     versionRange="${kubejs_version_range}"
     ordering="AFTER"
     side="BOTH"
+
+# FTB Teams: optional; when present, research owners are FTB teams (D31)
+[[dependencies.${mod_id}]]
+    modId="ftbteams"
+    type="optional"
+    versionRange="${ftb_teams_version_range}"
+    ordering="AFTER"
+    side="BOTH"

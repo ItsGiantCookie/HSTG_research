@@ -76,3 +76,18 @@ reshaped or deleted by the WP named.
     holds the data, by technology or pack id.
   - **WP-07a design addition to confirm:** templates declare typed params in a `declare` block. §8.6
     named typed params but showed no place to declare them.
+- WP-08 left for later:
+  - **WP-10:** queue editing by players: `StageGraph.state == REACHABLE` plus `checkRequirements` before
+    enqueue (§4.3, CLAUDE.md), `queue_permission`, and showing BLOCKED technologies so players re-add
+    them (D32). `ResearchManager.enqueue` already checks existence, researched and the
+    `BeforeEnqueue` veto.
+  - **WP-11:** `/hslabs` commands for admins: forget an owner (`ResearchManager.forgetOwner`), add
+    progress, list pending and blocked, and release reserved units (§4.2).
+  - **WP-07 validation, now possible:** warn when a technology's stage scope does not fit
+    `owner_model` (an individual stage under SERVER, a global one under TEAM), and when an individual
+    stage lacks `share_with_team` (§5.10).
+  - **Client check (Hendrik, two accounts or a LAN friend):** with FTB Teams, create a party, research
+    as one member and check that the other gets the stage. GameTests cover our team logic with
+    `gametest/TestTeams`; a real FTB party needs logged-in players.
+  - **GameTests:** mock players fire join events that KubeJS answers with a client packet, so tests
+    avoid them.

@@ -39,6 +39,7 @@ Build against HS 6.2.0-1.21.1 (published on Modrinth 2026-11-21, git tag `6.2.0-
 | Lootr | as HS build uses | — | Required by HS; HS will not load without it, dev env included |
 | KubeJS | 2101.7.2-build.374 | `[2101.7,)`, optional | `compileOnly` + `localRuntime`, same as HS; needs the JitPack repo at runtime |
 | Mekanism | 1.21.1-10.7.19.85 | `[10.7.19,10.8)`, required, `AFTER` | MIT. ModMaven: `mekanism:Mekanism:1.21.1-10.7.19.85`; the narrow range is there because `mek/client` uses Mekanism's GUI classes (§7.2, D22) |
+| FTB Teams | 2101.1.12 | `[2101.1.12,)`, optional, `AFTER` | Team ids for research owners (D31); pulls FTB Library 2101.1.40 and Architectury 13.0.11. Never bundled; facts in docs/ftb-teams-facts.md |
 | Jade | latest 1.21.1 | optional | Lab tooltip only (M3) |
 | FTB Teams | latest 2101.x | optional | HS's default team provider; we read its team UUID (D31). Without it every player is a team of one |
 

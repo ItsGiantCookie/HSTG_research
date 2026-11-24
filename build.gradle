@@ -49,6 +49,14 @@ repositories {
             includeGroup 'dev.latvian.apps'
         }
     }
+    exclusiveContent {
+        forRepository { maven { url = 'https://maven.ftb.dev/releases'; name = 'FTB' } }
+        filter { includeGroup 'dev.ftb.mods' }                 // FTB Teams + FTB Library (D31, optional)
+    }
+    exclusiveContent {
+        forRepository { maven { url = 'https://maven.architectury.dev'; name = 'Architectury' } }
+        filter { includeGroup 'dev.architectury' }             // required by FTB Teams
+    }
     maven {
         // KubeJS pulls animated-gif-lib-for-java at runtime; it only lives on JitPack.
         name = 'JitPack'
@@ -161,6 +169,12 @@ dependencies {
     compileOnly "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
     localRuntime "dev.latvian.mods:kubejs-neoforge:${kubejs_version}"
 
+    // FTB Teams: optional (D31); compat/ftbteams is loaded only when it is present. Dev runs load it.
+    compileOnly "dev.ftb.mods:ftb-teams-neoforge:${ftb_teams_version}"
+    localRuntime "dev.ftb.mods:ftb-teams-neoforge:${ftb_teams_version}"
+    localRuntime "dev.ftb.mods:ftb-library-neoforge:${ftb_library_version}"
+    localRuntime "dev.architectury:architectury-neoforge:${architectury_version}"
+
     // Unit + guard tests (docs/design.md §14): plain JUnit 5, no Minecraft.
     testImplementation platform("org.junit:junit-bom:${junit_version}")
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -239,6 +253,7 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             historystages_version_range: historystages_version_range,
             mekanism_version_range : mekanism_version_range,
             kubejs_version_range   : kubejs_version_range,
+            ftb_teams_version_range: ftb_teams_version_range,
     ]
     inputs.properties replaceProperties
     expand replaceProperties

@@ -16,7 +16,10 @@ import io.github.itsgiantcookie.hstglabs.research.LabsConfig;
 import io.github.itsgiantcookie.hstglabs.research.ResearchManager;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
+import io.github.itsgiantcookie.hstglabs.compat.ftbteams.FtbTeamsCompat;
+import io.github.itsgiantcookie.hstglabs.gametest.TestTeams;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -42,7 +45,14 @@ public final class HstgLabs {
         modBus.addListener(PackSyncPayload::register);
         TechReloader.register();
         // WP-08: owners, the research manager, and History Stages through the hs bridge only
-        BuiltInOwners.register(modBus);
+        boolean ftbTeams = ModList.get().isLoaded(FtbTeamsCompat.MOD_ID);
+        BuiltInOwners.register(modBus, !ftbTeams);
+        if (ftbTeams) {
+            FtbTeamsCompat.register(modBus);
+        }
+        if (TestTeams.enabled()) {
+            TestTeams.register(modBus);
+        }
         ResearchManager.register(HistoryStagesBridge.INSTANCE);
         HistoryStagesBridge.listen(ResearchManager.stageListener());
         if (DemoAddon.enabled()) {

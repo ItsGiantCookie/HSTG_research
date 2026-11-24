@@ -23,6 +23,8 @@ public final class HistoryStagesBridge implements StageBridge {
 
     /** Last {@code StageEvent.Unlocked} cause per stage, for GameTests and {@code /hslabs debug}. */
     private static final Map<String, String> LAST_UNLOCK_CAUSE = new ConcurrentHashMap<>();
+    /** Players HS reported an individual unlock for, per stage (online or offline), for GameTests. */
+    private static final Map<String, Set<UUID>> INDIVIDUAL_UNLOCKS = new ConcurrentHashMap<>();
     /** Stages whose next {@code BeforeUnlock} a GameTest wants vetoed (setup only). */
     private static final Set<String> VETO_NEXT = ConcurrentHashMap.newKeySet();
 
@@ -35,7 +37,10 @@ public final class HistoryStagesBridge implements StageBridge {
             LAST_UNLOCK_CAUSE.put(e.getStageId(), e.getCause().name());
             listener.unlocked(e.getStageId(), Optional.empty());
         });
-        NeoForge.EVENT_BUS.addListener(StageEvent.IndividualUnlocked.class, e -> listener.unlocked(e.getStageId(), Optional.of(e.getPlayerUUID())));
+        NeoForge.EVENT_BUS.addListener(StageEvent.IndividualUnlocked.class, e -> {
+            INDIVIDUAL_UNLOCKS.computeIfAbsent(e.getStageId(), s -> ConcurrentHashMap.newKeySet()).add(e.getPlayerUUID());
+            listener.unlocked(e.getStageId(), Optional.of(e.getPlayerUUID()));
+        });
         NeoForge.EVENT_BUS.addListener(StageEvent.Locked.class, e -> listener.locked(e.getStageId(), Optional.empty()));
         NeoForge.EVENT_BUS.addListener(StageEvent.IndividualLocked.class, e -> listener.locked(e.getStageId(), Optional.of(e.getPlayerUUID())));
         NeoForge.EVENT_BUS.addListener(StageEvent.LostForGood.class,
@@ -82,6 +87,11 @@ public final class HistoryStagesBridge implements StageBridge {
     /** The cause of the last global unlock of {@code stage}, e.g. {@code ADDON}. */
     public static Optional<String> lastUnlockCause(String stage) {
         return Optional.ofNullable(LAST_UNLOCK_CAUSE.get(stage));
+    }
+
+    /** Whether HS reported an individual unlock of {@code stage} for {@code player} (online or offline) since start. */
+    public static boolean individualUnlockReported(String stage, UUID player) {
+        return INDIVIDUAL_UNLOCKS.getOrDefault(stage, Set.of()).contains(player);
     }
 
     /** GameTest setup: relock a global stage so a test starts from a known state. */
