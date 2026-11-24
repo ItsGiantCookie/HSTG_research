@@ -2,7 +2,7 @@
 
 Factorio-style research addon for History Stages (HS). NeoForge 1.21.1, Java 21,
 HS 6.2.0–6.x, Mekanism 10.7.19+ (required), KubeJS 2101.x (optional). Design: docs/design.md.
-Mod id `hstg_labs`, package `de.germanrangers.hstglabs`, MIT (D1).
+Mod id `hstg_labs`, package `io.github.itsgiantcookie.hstglabs`, MIT (D1).
 
 ## How we work
 - With Hendrik, not for him. At any open decision (docs/design.md §15) write

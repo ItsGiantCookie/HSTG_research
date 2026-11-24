@@ -180,7 +180,7 @@ tasks.named('test', Test) {
 // WP-04 acceptance (docs/design.md §13): >= 90 % branch coverage on core/, enforced by `check`.
 
 def coreClasses = { files(sourceSets.main.output.classesDirs.collect { dir ->
-    fileTree(dir) { include 'de/germanrangers/hstglabs/core/**' }
+    fileTree(dir) { include 'io/github/itsgiantcookie/hstglabs/core/**' }
 }) }
 
 tasks.named('jacocoTestReport', JacocoReport) {

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to HSTG: Research Labs. API changes (`de.germanrangers.hstglabs.api..`) are
+All notable changes to HSTG: Research Labs. API changes (`io.github.itsgiantcookie.hstglabs.api..`) are
 always listed here (docs/design.md §9.1). Every API type is `@ApiStatus.Experimental` until 1.0.
 
 ## Unreleased

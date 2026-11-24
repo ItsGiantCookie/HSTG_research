@@ -8,7 +8,7 @@ See art/provenance.yaml for the exact files.
 Code derived from Mekanism (tag v1.21.1-10.7.19.85), each file carrying the MIT header below
 (docs/design.md §7.2 rule 4):
 
-- `src/main/java/de/germanrangers/hstglabs/mek/client/MekGui.java`: GUI drawing ported from
+- `src/main/java/io/github/itsgiantcookie/hstglabs/mek/client/MekGui.java`: GUI drawing ported from
   `mekanism.client.gui.GuiUtils`, `GuiElement` and `BasicColorButton`.
 
 ```

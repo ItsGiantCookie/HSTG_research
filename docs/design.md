@@ -311,7 +311,7 @@ Arrows point from caller to callee; `research` is the only writer of progress, a
 
 ### 6.1 Packages
 
-Base package `de.germanrangers.hstglabs` (decision D1).
+Base package `io.github.itsgiantcookie.hstglabs` (decision D1).
 
 | Package | Holds | May import |
 | --- | --- | --- |
@@ -581,7 +581,7 @@ Other mods build on HSTG Research Labs through one `api` package with a written 
 
 ### 9.1 Contract
 
-- `de.germanrangers.hstglabs.api` and `api.client` are public; everything else is internal and may change without notice.
+- `io.github.itsgiantcookie.hstglabs.api` and `api.client` are public; everything else is internal and may change without notice.
 - `HSLabsAPI.API_VERSION` and `API_MINOR`. Breaking changes wait for a new `API_VERSION`; every API change is in the changelog.
 - Guard tests: no public signature in `api` names an internal type; `compat`, `devui` and `demo` import nothing of ours outside `api`; every `Register…Event` refuses registration after dispatch.
 - An in-repo `demo` addon exercises every extension point and is test-enforced to use only `api`, so whatever it needs, a real addon gets too.
@@ -873,7 +873,7 @@ hstg-labs/
   docs/decisions/D01-*.md   # one ADR per decision gate
   docs/backlog.md           # ideas outside the current WP
   ref/History-Stages/       # read-only checkout of the tag, git-ignored
-  src/main/java/de/germanrangers/hstglabs/
+  src/main/java/io/github/itsgiantcookie/hstglabs/
     api/ api/client/        # public contract
     core/ hs/ tech/ research/ lab/ grid/ packet/ client/ devui/ command/
     compat/kubejs/ compat/jade/ demo/
@@ -1002,7 +1002,7 @@ All 31 decisions were settled with Hendrik on 2026-11-24; the Decision column ho
 
 | ID | Question | Options | Decision | Needed by | Status |
 | --- | --- | --- | --- | --- | --- |
-| D1 | Name, mod id, package, licence | `hstg_labs` / "HSTG: Research Labs" (matches the existing HSTG: Permissions addon) vs own brand; licence MIT vs ARR | `hstg_labs`, `de.germanrangers.hstglabs`, MIT; ask the HS authors whether the HSTG prefix is welcome | WP-01 | Decided |
+| D1 | Name, mod id, package, licence | `hstg_labs` / "HSTG: Research Labs" (matches the existing HSTG: Permissions addon) vs own brand; licence MIT vs ARR | `hstg_labs`, `io.github.itsgiantcookie.hstglabs`, MIT; ask the HS authors whether the HSTG prefix is welcome | WP-01 | Decided |
 | D2 | Research owner | Server only vs team (HS `Teams`) vs player | Chosen: HS teams from 0.1.0, keyed by FTB team id with a team-of-one fallback (D31); server owner stays selectable | WP-08 | Decided |
 | D3 | Source of truth for cost | Own JSON files written by the dev UI · HS settings group (no API save path) · datapack only | Own files; addon and KubeJS sources merged after them | WP-07 | Decided |
 | D4 | Where definition files live | `config/hstg_labs/` (like HS) vs datapacks `data/<ns>/hstg_labs/` | Config folder, because the dev UI writes there live; datapacks as a read-only source later | WP-07 | Decided |
