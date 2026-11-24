@@ -59,6 +59,19 @@ public final class ResearchProgress {
         return true;
     }
 
+    /**
+     * Credits up to {@code count} units without a claim (the API's {@code addProgress}, an admin
+     * command, §9.5). Never beyond U; returns how many were credited.
+     */
+    public int credit(int count) {
+        if (count < 0) {
+            throw new IllegalArgumentException("count must not be negative, was " + count);
+        }
+        int added = Math.min(count, units - done);
+        done += added;
+        return added;
+    }
+
     /** A claimed unit was abandoned (worker removed, admin release): nothing is credited. */
     public void cancelUnit() {
         releaseClaim();

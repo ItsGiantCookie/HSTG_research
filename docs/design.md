@@ -123,9 +123,9 @@ A technology costs U units. Each unit needs a fixed set of packs and takes T tic
 The mod only drives a technology up to Completing; whether it becomes Researched is HS's answer to the unlock call.
 
 - **Researched is never stored by this mod.** It is read from HS (`StageStates.isUnlockedGlobal`). Our SavedData holds only queue and progress.
-- **Unlock refused** (`unlockGlobal` returns false: logic block, lost for good, or a `BeforeUnlock` veto): keep all progress, mark the technology `BLOCKED`, move the queue on, and retry on the next `StageEvent` or every 100 ticks.
+- **Unlock refused** (`unlockGlobal` returns false: logic block, lost for good, or a `BeforeUnlock` veto): keep all progress, mark the technology `BLOCKED` and remove it from the queue (D32). Re-adding it retries the unlock at once if it is complete.
 - **Unlocked elsewhere** (command, quest, script): drop it from the queue and discard its progress.
-- **Relocked** (`StageEvent.Locked` for a lab technology): reset or keep progress per config `on_relock` (default `RESET`, decision D5).
+- **Relocked** (`StageEvent.Locked` for a lab technology): reset or keep progress per config `on_relock` (default `RESET`, decision D5). After our own unlock the completed progress is kept, so with `KEEP` queueing the technology again re-unlocks it without paying again.
 - **Lost for good** (`StageEvent.LostForGood`): shown as lost, not queueable; only an admin unlock brings it back.
 
 ### 4.2 Units and labs
@@ -1033,6 +1033,7 @@ All 31 decisions were settled with Hendrik on 2026-11-24; the Decision column ho
 | D29 | Effective tier of a network worker slot | min(worker, core) · core tier only · worker tier only · lowest member | min(worker, core): the core caps the network, each server still needs its own tier | WP-05 | Decided |
 | D30 | Upgrading labs in place | Own items + Mekanism installers · own items only · Mekanism installers only · rebuild | Chosen: own tier upgrade items only; contents and claimed units survive | WP-15 | Decided |
 | D31 | How team progress and queues are keyed (HS's team API has no team id) | FTB team id with solo fallback · per player, mirrored to teammates · member-set key with merge rules · ask HS for a team id | FTB Teams team UUID via its API (soft dependency); otherwise a team of one | WP-08 | Decided |
+| D32 | A blocked technology and the queue | Move to the back · remove from the queue · stay at the head | Remove from the queue, keep progress and the BLOCKED mark; re-adding retries (docs/decisions/D32-blocked-technology-in-queue.md) | WP-08 | Decided |
 
 ### 15.2 Risks
 

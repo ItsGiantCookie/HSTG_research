@@ -30,9 +30,7 @@ reshaped or deleted by the WP named.
 - `run/eula.txt` is not created by the build; set `eula=true` yourself before `./gradlew runServer`.
 - WP-07: `core.TechCost.MAX_AMOUNT` is 1,000,000 per ingredient per unit. §8.1/§8.3 say "amounts out of
   range" but give no range; confirm or lower it when the codec and validation are written.
-- WP-08: §4.1 says a `BLOCKED` technology "moves the queue on". `ResearchQueue` supports both
-  readings (`move(id, size)` to send it to the back, or `remove`); WP-08 must pick one. Under D18 a
-  blocked head that stays at the head would idle every lab.
+- ~~WP-08: blocked technology and the queue~~ decided as D32 (remove from the queue).
 - WP-05 chose the order of idle reasons per slot (§5.7 lists them, it does not order them):
   `NO_RESEARCH`, `BLOCKED`, `LAB_TIER`, `LAB_REQUIREMENTS`, `NO_POWER`, `CAP_REACHED`,
   `MISSING_INGREDIENTS`, so the first reason shown is the one the player has to fix first. Change in
