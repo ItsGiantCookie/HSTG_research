@@ -3,6 +3,7 @@ plugins {
     id 'maven-publish'
     id 'net.neoforged.moddev' version '2.0.140'
     id 'idea'
+    id 'jacoco'
 }
 
 tasks.named('wrapper', Wrapper).configure {
@@ -165,6 +166,40 @@ tasks.named('test', Test) {
     // guard tests scan the source tree relative to the project directory
     systemProperty 'hstglabs.projectDir', project.projectDir.absolutePath
     inputs.dir('src/main/java')
+    finalizedBy 'jacocoTestReport'
+}
+
+// WP-04 acceptance (docs/design.md §13): >= 90 % branch coverage on core/, enforced by `check`.
+
+def coreClasses = { files(sourceSets.main.output.classesDirs.collect { dir ->
+    fileTree(dir) { include 'de/germanrangers/hstglabs/core/**' }
+}) }
+
+tasks.named('jacocoTestReport', JacocoReport) {
+    dependsOn 'test'
+    classDirectories.setFrom(coreClasses())
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+tasks.named('jacocoTestCoverageVerification', JacocoCoverageVerification) {
+    dependsOn 'test'
+    classDirectories.setFrom(coreClasses())
+    violationRules {
+        rule {
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = 0.90
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn 'jacocoTestCoverageVerification'
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

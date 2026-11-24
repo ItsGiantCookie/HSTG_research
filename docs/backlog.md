@@ -28,3 +28,8 @@ reshaped or deleted by the WP named.
 
 - Ask the History Stages authors whether the "HSTG" prefix is welcome (D1 follow-up).
 - `run/eula.txt` is not created by the build; set `eula=true` yourself before `./gradlew runServer`.
+- WP-07: `core.TechCost.MAX_AMOUNT` is 1,000,000 per ingredient per unit. §8.1/§8.3 say "amounts out of
+  range" but give no range; confirm or lower it when the codec and validation are written.
+- WP-08: §4.1 says a `BLOCKED` technology "moves the queue on". `ResearchQueue` supports both
+  readings (`move(id, size)` to send it to the back, or `remove`); WP-08 must pick one. Under D18 a
+  blocked head that stays at the head would idle every lab.

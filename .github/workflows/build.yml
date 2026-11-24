@@ -62,6 +62,7 @@ jobs:
           path: |
             build/reports/tests/
             build/test-results/
+            build/reports/jacoco/
             run/logs/
           if-no-files-found: ignore
 
