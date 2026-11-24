@@ -1,28 +1,27 @@
-# mekstyle for Claude Code + Blockbench MCP
+# HSTG: Research Labs
 
-Copy the contents of this folder into the root of your mod repo (next to build.gradle).
+Factorio-style research for [History Stages](https://github.com/Flix100000/History-Stages):
+labs consume science packs over time and unlock History Stages stages through its public API.
+NeoForge 1.21.1, Java 21. Requires History Stages 6.2+ and Mekanism 10.7.19+; KubeJS optional.
 
-    .claude/skills/mekstyle/SKILL.md          skill Claude Code loads automatically
-    .claude/skills/mekstyle/style-guide.yaml  full rule set (source of truth)
-    .claude/skills/mekstyle/style-guide.json  same data, for tools without PyYAML
-    .claude/skills/mekstyle/scripts/lint_textures.py
-    .claude/settings.json                     enables the MCP server, asks before risky_eval
-    .mcp.json                                 Blockbench MCP (HTTP, localhost:3000/bb-mcp)
-    CLAUDE.md.snippet                         paste into your CLAUDE.md
+- Design: [docs/design.md](docs/design.md) · agent rules: [CLAUDE.md](CLAUDE.md)
+- API facts: [docs/hs-api-facts.md](docs/hs-api-facts.md), [docs/mek-api-facts.md](docs/mek-api-facts.md)
+- Decisions: [docs/decisions/](docs/decisions/) · backlog: [docs/backlog.md](docs/backlog.md)
 
-## Setup
-1. Blockbench desktop: File > Plugins > Load Plugin from URL:
-   https://jasonjgardner.github.io/blockbench-mcp-plugin/mcp.js
-2. pip install pillow pyyaml
-3. Start Blockbench, then `claude` in the repo; check with /mcp that "blockbench" is connected.
-   (Alternative without .mcp.json: claude mcp add blockbench --transport http http://localhost:3000/bb-mcp)
-4. If you already have .claude/settings.json, merge the two keys instead of overwriting.
+## Build and verify
 
-## Use
-- "Model a basic-tier crusher following mekstyle" -> skill + Blockbench MCP
-- "Review assets against mekstyle" -> runs the linter, reports rule IDs
-- CI: python .claude/skills/mekstyle/scripts/lint_textures.py src/main/resources/assets/<modid> --strict-palette
-  (exit 1 on MUST violations)
+```
+./gradlew build                # compile + jar
+./gradlew test                 # unit + guard tests (no Minecraft)
+./gradlew runGameTestServer    # headless GameTests, namespace hstg_labs
+./gradlew runClient            # manual client checks
+```
 
-Edit style-guide.yaml, then regenerate the JSON:
-  python -c "import yaml,json;json.dump(yaml.safe_load(open('.claude/skills/mekstyle/style-guide.yaml')),open('.claude/skills/mekstyle/style-guide.json','w'),indent=2,default=str)"
+`./gradlew runServer` needs `eula=true` in `run/eula.txt`, which you set yourself.
+
+Reference sources for development live in `ref/` (git-ignored); the clone commands are in CLAUDE.md.
+
+## Licence
+
+MIT, see [LICENSE](LICENSE). Mekanism-derived assets and code: see
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

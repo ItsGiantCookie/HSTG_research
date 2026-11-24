@@ -1,0 +1,73 @@
+# WP-03 (docs/design.md §12.5, §14): build, unit + guard tests, GameTests, asset lint.
+name: Build
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # Caches the Gradle user home (dependencies, NeoForge artifacts). Matters because
+      # cursemaven (Lootr) rate-limits shared runner IPs; a cache hit never asks.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Build
+        run: ./gradlew build --stacktrace
+
+      - name: Unit and guard tests
+        run: ./gradlew test --stacktrace
+
+      - name: GameTests (headless server, namespace hstg_labs)
+        run: ./gradlew runGameTestServer --stacktrace
+
+      - name: Set up Python (asset lint)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Asset lint (mekstyle, fails on MUST)
+        run: |
+          pip install --quiet pillow pyyaml
+          python .claude/skills/mekstyle/scripts/lint_textures.py src/main/resources/assets/hstg_labs --provenance art/provenance.yaml
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            build/reports/tests/
+            build/test-results/
+            run/logs/
+          if-no-files-found: ignore
+
+      - name: Upload mod jar
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hstg_labs-jar
+          path: build/libs/*.jar
