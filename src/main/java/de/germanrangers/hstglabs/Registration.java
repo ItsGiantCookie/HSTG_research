@@ -12,9 +12,12 @@ import de.germanrangers.hstglabs.lab.ResearchRecipe;
 import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Block;
@@ -104,6 +107,35 @@ public final class Registration {
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<ResearchRecipe>> RESEARCH_RECIPE_SERIALIZER =
           RECIPE_SERIALIZERS.register("research", ResearchRecipe.Serializer::new);
 
+    // --- creative tab ---
+
+    private static final DeferredRegister<CreativeModeTab> CREATIVE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, HstgLabs.MODID);
+
+    /**
+     * One tab with every item of the mod, in registration order. Items that come in variants (science
+     * packs, one per pack definition) list their own stacks through {@link CreativeTabStacks}.
+     */
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN_TAB = CREATIVE_TABS.register("main",
+          () -> CreativeModeTab.builder()
+                .title(Component.translatable("itemGroup.hstg_labs"))
+                .icon(() -> new ItemStack(RESEARCH_LAB_ITEM.get()))
+                .displayItems((parameters, output) -> {
+                    for (DeferredHolder<Item, ? extends Item> entry : ITEMS.getEntries()) {
+                        if (entry.get() instanceof CreativeTabStacks variants) {
+                            variants.creativeTabStacks().forEach(output::accept);
+                        } else {
+                            output.accept(entry.get());
+                        }
+                    }
+                })
+                .build());
+
+    /** An item that shows several stacks (variants) in the creative tab instead of its default stack. */
+    public interface CreativeTabStacks {
+
+        java.util.List<ItemStack> creativeTabStacks();
+    }
+
     private Registration() {
     }
 
@@ -122,5 +154,6 @@ public final class Registration {
         MENUS.register(modBus);
         RECIPE_TYPES.register(modBus);
         RECIPE_SERIALIZERS.register(modBus);
+        CREATIVE_TABS.register(modBus);
     }
 }

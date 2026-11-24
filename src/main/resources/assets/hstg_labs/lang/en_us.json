@@ -53,5 +53,6 @@
   "hstg_labs.idle.no_power": "No power",
   "hstg_labs.idle.cap_reached": "Every unit is already claimed",
   "hstg_labs.idle.missing_ingredients": "Missing ingredient: %s",
-  "hstg_labs.demo.idle.no_mana": "No mana (demo)"
+  "hstg_labs.demo.idle.no_mana": "No mana (demo)",
+  "itemGroup.hstg_labs": "HSTG: Research Labs"
 }
