@@ -43,3 +43,46 @@ under "Internal, reached by id" so a Mekanism update can be checked against this
 | Configurator overlay | colour = data type colour at 0.6 alpha | `main/java/mekanism/client/render/RenderTickHandler.java:491` | `client/PortOverlayRenderer` |
 | GUI drawing (ported, MIT) | `GuiUtils.blitNineSlicedSized(...)` | `main/java/mekanism/client/gui/GuiUtils.java:329` | `mek/client/MekGui` |
 | GUI textures | `assets/mekanism/gui/**` (base, button, slot/*, bar/*, progress/*, tabs/*, holder_*, …) | resources | referenced as `mekanism:gui/<path>` |
+
+## WP-05a spike (D22): signatures the two throwaway variants used
+
+The spike code is deleted (see docs/decisions/D22-mekanism-depth.md); these rows stay so the chosen
+option starts from verified facts. All paths relative to `ref/Mekanism/src/`.
+
+### Variant A, Mekanism internals (`main/java/mekanism/`)
+
+| Need | Signature | Where |
+| --- | --- | --- |
+| Tile base with side config + ejector | `TileEntityConfigurableMachine(Holder<Block> blockProvider, BlockPos, BlockState)`; builds `TileComponentConfig` from the block's `AttributeSideConfig` | `common/tile/prefab/TileEntityConfigurableMachine.java:22` |
+| Tile base | `TileEntityMekanism(Holder<Block> blockProvider, BlockPos, BlockState)`; reads every behaviour from block attributes (`:343-356`) and calls the `getInitial*` hooks **from its constructor**, so subclass fields they assign must have no initialiser | `common/tile/base/TileEntityMekanism.java:278` |
+| Container hooks | `getInitialInventory(IContentsListener)`, `getInitialChemicalTanks(IContentsListener)`, `getInitialEnergyContainers(IContentsListener)` | `TileEntityMekanism.java:1208, 1278, 1376` |
+| Server tick | `protected boolean onUpdateServer()` | `TileEntityMekanism.java:730` |
+| Side config | `TileComponentConfig.setupInputConfig(TransmissionType, Object container)` (adds the slot info only, every face stays `NONE`) | `common/tile/component/TileComponentConfig.java:147` |
+| Default faces | `TileComponentConfig.applyImplicitComponents` reads `MekanismDataComponents.SIDE_CONFIG` from the **placing item**; `SIDE_CONFIG` / `EJECTOR` components | `TileComponentConfig.java:258`, `common/registries/MekanismDataComponents.java:250, 245` |
+| Face presets | `record AttachedSideConfig(Map<TransmissionType, LightConfigInfo>)`, `LightConfigInfo.INPUT_ONLY` (all faces `INPUT`), `AttachedEjector.DEFAULT` | `common/attachments/component/AttachedSideConfig.java:27, 227`, `AttachedEjector.java:25` |
+| Ejector | `TileComponentEjector(TileEntityMekanism)` | `common/tile/component/TileComponentEjector.java:92` |
+| Block type | `MachineBuilder.createMachine(Supplier<TileEntityTypeRegistryObject<TILE>>, ILangEntry)`; `Machine` adds facing, inventory, security, redstone, comparator, upgrade support (`SPEED, ENERGY, MUFFLING`) | `common/content/blocktype/Machine.java:49, 12-13` |
+| | `withGui(Supplier<ContainerTypeRegistryObject<…>>)`, `withEnergyConfig(LongSupplier usage, LongSupplier storage)` | `common/content/blocktype/BlockTypeTile.java:49, 57` |
+| | `AttributeSideConfig.ADVANCED_ELECTRIC_MACHINE` (ITEM, CHEMICAL, ENERGY) | `common/block/attribute/AttributeSideConfig.java:12` |
+| Block + item | `BlockTile(TYPE, UnaryOperator<Properties>)`, `ItemBlockTooltip(BLOCK, boolean hasDetails, Properties)` | `common/block/prefab/BlockTile.java:37`, `common/item/block/ItemBlockTooltip.java:61` |
+| Registration | `BlockDeferredRegister.register(name, blockSupplier, itemCreator)` | `common/registration/impl/BlockDeferredRegister.java:43` |
+| | `TileEntityTypeDeferredRegister.mekBuilder(DeferredHolder<Block,?>, factory)`: **one block per type**; attaches item/fluid/chemical/heat/energy/security capability providers and registers them itself on `RegisterCapabilitiesEvent` | `common/registration/impl/TileEntityTypeDeferredRegister.java:46, 79` |
+| | `ContainerTypeDeferredRegister.register(String, Class<TILE>)` → `MekanismTileContainer<TILE>` | `common/registration/impl/ContainerTypeDeferredRegister.java:42` |
+| Energy | `MachineEnergyContainer.input(TILE, IContentsListener)`, usage and capacity from the block's energy attribute and upgrades | `common/capabilities/energy/MachineEnergyContainer.java:21` |
+| Holders | `InventorySlotHelper` / `ChemicalTankHelper` / `EnergyContainerHelper.forSideWithConfig(ISideConfiguration)` | `common/capabilities/holder/slot/InventorySlotHelper.java:34`, `holder/chemical/ChemicalTankHelper.java:34`, `holder/energy/EnergyContainerHelper.java:23` |
+| Slot | `BasicInventorySlot.at(Predicate<ItemStack>, IContentsListener, x, y)` | `common/inventory/slot/BasicInventorySlot.java:34` |
+| Speed upgrades | `MekanismUtils.getTicks(IUpgradeTile, int def)` | `common/util/MekanismUtils.java:311` |
+| GUI | `GuiConfigurableTile(CONTAINER, Inventory, Component)` adds side-config + transporter tabs; `GuiMekanismTile.addGenericTabs` adds upgrade, redstone, security tabs | `client/gui/GuiConfigurableTile.java:17`, `client/gui/GuiMekanismTile.java:39` |
+| | `GuiVerticalPowerBar(IGuiWrapper, IEnergyContainer, x, y)`, `GuiChemicalGauge(Supplier<IChemicalTank>, Supplier<List<IChemicalTank>>, GaugeType, IGuiWrapper, x, y)`, `GuiEnergyTab(IGuiWrapper, MachineEnergyContainer<?>, BooleanSupplier)` | `client/gui/element/bar/GuiVerticalPowerBar.java:22`, `element/gauge/GuiChemicalGauge.java:41`, `element/tab/GuiEnergyTab.java:50` |
+| GUI without the tile base | `GuiMekanism<CONTAINER extends AbstractContainerMenu>` accepts any menu, but `GuiSideConfigurationTab<TILE extends TileEntityMekanism & ISideConfiguration>` and `GuiUpgradeWindowTab(IGuiWrapper, TileEntityMekanism, …)` need the tile base | `client/gui/GuiMekanism.java:51`, `element/tab/window/GuiSideConfigurationTab.java:18`, `element/tab/window/GuiUpgradeWindowTab.java:21` |
+| Not in the API | `BasicEnergyContainer` is internal, so variant B wrote its own `IEnergyContainer` | `common/capabilities/energy/BasicEnergyContainer.java:21` |
+
+### Variant B, API only (`api/java/mekanism/api/`)
+
+| Need | Signature | Where |
+| --- | --- | --- |
+| Chemical tank | `BasicChemicalTank.input(long capacity, Predicate<Chemical> validator, IContentsListener)` | `chemical/BasicChemicalTank.java:197` |
+| Handler helpers | `IMekanismChemicalHandler.getChemicalTanks(Direction)`, `IMekanismStrictEnergyHandler.getEnergyContainers(Direction)` (all transfer logic is default methods) | `chemical/IMekanismChemicalHandler.java:38`, `energy/IMekanismStrictEnergyHandler.java:39` |
+| Energy container | `interface IEnergyContainer extends INBTSerializable<CompoundTag>, IContentsListener` | `energy/IEnergyContainer.java:16` |
+| Test input | `MekanismAPI.CHEMICAL_REGISTRY`, `new ChemicalStack(Chemical, long)`, `IChemicalHandler.insertChemical(ChemicalStack, Action)` | `MekanismAPI.java:120`, `chemical/ChemicalStack.java:206`, `chemical/IChemicalHandler.java:121` |
+| Misc | `AutomationType.INTERNAL`, `ILangEntry` (used by variant A for the block description) | `AutomationType.java:14`, `text/ILangEntry.java:12` |
