@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.fml.loading.FMLPaths;
@@ -55,8 +56,8 @@ public final class TechReloader {
         });
         NeoForge.EVENT_BUS.addListener(OnDatapackSyncEvent.class, e -> {
             MinecraftServer running = e.getPlayerList().getServer();
-            if (e.getPlayer() == null && running.getTickCount() != lastLoadTick) {
-                // a /reload finished: load again, then everyone gets the new packs (skipped if this tick already loaded, e.g. at start)
+            if (e.getPlayer() == null) {
+                // a /reload finished: always load again (two reloads can finish in one tick), then everyone gets the new packs
                 reload(running, "/reload");
             }
             PackSyncPayload payload = PackSyncPayload.of(current.packs().values());
@@ -86,7 +87,12 @@ public final class TechReloader {
     /** The live registries, for the repository. */
     public static TechTypes types() {
         return new TechTypes(ApiRegistries.INGREDIENT_TYPES::get, ApiRegistries.LAB_REQUIREMENT_TYPES::get, ApiRegistries.REWARD_TYPES::get,
-              ApiRegistries.TECH_SOURCES.values());
+              ApiRegistries.TECH_SOURCES.values(), TechReloader::isTemplateKind);
+    }
+
+    private static boolean isTemplateKind(String id) {
+        ResourceLocation rl = ResourceLocation.tryParse(id);
+        return rl != null && ApiRegistries.TEMPLATE_KINDS.contains(rl);
     }
 
     /** Lab types for validation. Empty until the lab type loader exists (WP-09). */

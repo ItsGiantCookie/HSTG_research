@@ -42,4 +42,13 @@ public record TechDefinition(String id, String stage, int units, int unitTime, L
     public JsonObject json() {
         return json.deepCopy();
     }
+
+    /**
+     * The same definition, written back as {@code file}. For a template instance the fields come from
+     * the resolved template, but the file keeps its link ({@code template}, {@code params},
+     * {@code overrides}, D27).
+     */
+    public TechDefinition withJson(JsonObject file) {
+        return new TechDefinition(id, stage, units, unitTime, ingredients, minTier, requires, rewards, tree, addons, file);
+    }
 }

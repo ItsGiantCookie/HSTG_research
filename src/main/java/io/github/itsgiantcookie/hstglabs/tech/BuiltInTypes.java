@@ -17,6 +17,10 @@ import io.github.itsgiantcookie.hstglabs.api.lab.SiteMember;
 import io.github.itsgiantcookie.hstglabs.api.reward.RegisterRewardTypesEvent;
 import io.github.itsgiantcookie.hstglabs.api.reward.RewardContext;
 import io.github.itsgiantcookie.hstglabs.api.reward.RewardType;
+import io.github.itsgiantcookie.hstglabs.api.template.RegisterTemplateKindsEvent;
+import io.github.itsgiantcookie.hstglabs.api.template.TemplateKind;
+import io.github.itsgiantcookie.hstglabs.tech.template.BuiltInTemplates;
+import com.mojang.serialization.Dynamic;
 import io.github.itsgiantcookie.hstglabs.core.LabRequirement;
 import io.github.itsgiantcookie.hstglabs.core.LabRequirements;
 import io.github.itsgiantcookie.hstglabs.core.Member;
@@ -84,6 +88,22 @@ public final class BuiltInTypes {
             e.register(ANY, new CoreRequirementType<>(group(LabRequirements.AnyOf::new, LabRequirements.AnyOf::of)));
         });
         modBus.addListener(RegisterRewardTypesEvent.class, e -> e.register(UNLOCK_STAGE, new UnlockStageType()));
+        modBus.addListener(RegisterTemplateKindsEvent.class, e -> {
+            e.register(ResourceLocation.parse(BuiltInTemplates.TECHNOLOGY_KIND), new DefinitionKind("technology"));
+            e.register(ResourceLocation.parse(BuiltInTemplates.PACK_KIND), new DefinitionKind("pack"));
+        });
+    }
+
+    /**
+     * Template kinds for our JSON definition files (docs/design.md §8.6). The definitions are read by
+     * {@link TechJson} / {@link PackJson}, not by a codec, so the target codec passes the data through.
+     */
+    record DefinitionKind(String editorHint) implements TemplateKind<Dynamic<?>> {
+
+        @Override
+        public MapCodec<Dynamic<?>> targetCodec() {
+            return MapCodec.assumeMapUnsafe(Codec.PASSTHROUGH);
+        }
     }
 
     /** Wires {@code unlock_stage} to History Stages; called once by the hs package. */

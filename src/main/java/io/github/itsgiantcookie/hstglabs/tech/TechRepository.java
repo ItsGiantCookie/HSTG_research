@@ -10,6 +10,10 @@ import io.github.itsgiantcookie.hstglabs.core.tech.Problem;
 import io.github.itsgiantcookie.hstglabs.core.tech.StageModel;
 import io.github.itsgiantcookie.hstglabs.core.tech.TechModel;
 import io.github.itsgiantcookie.hstglabs.core.tech.TechValidator;
+import io.github.itsgiantcookie.hstglabs.tech.template.BuiltInTemplates;
+import io.github.itsgiantcookie.hstglabs.tech.template.Template;
+import io.github.itsgiantcookie.hstglabs.tech.template.TemplateEngine;
+import io.github.itsgiantcookie.hstglabs.tech.template.TemplateJson;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -26,8 +30,9 @@ import java.util.stream.Stream;
 import net.minecraft.resources.ResourceLocation;
 
 /**
- * Loads technologies and packs (docs/design.md §8): {@code <config>/packs/**.json}, then
- * {@code <config>/technologies/**.json}, then every registered {@link TechSource} (D3: files first,
+ * Loads technologies and packs (docs/design.md §8): {@code <config>/templates/**.json} (§8.6, plus the
+ * built-in templates), {@code <config>/packs/**.json}, then {@code <config>/technologies/**.json}, then
+ * every registered {@link TechSource} (D3: files first,
  * sources after; a later definition with the same id replaces an earlier one and says so). Each file
  * stands alone: a broken file disables only its own technology or pack, with an error naming the file
  * and the JSON path.
@@ -37,6 +42,8 @@ public final class TechRepository {
     public static final String INVALID_FILE = "invalid_file";
     public static final String INVALID_DEFINITION = "invalid_definition";
     public static final String OVERRIDDEN = "overridden";
+    public static final String TEMPLATE_ERROR = "template_error";
+    public static final String TEMPLATE_WARNING = "template_warning";
 
     private TechRepository() {
     }
@@ -48,19 +55,21 @@ public final class TechRepository {
      * @param definitions  every definition that parsed, enabled or not (what the dev UI edits and writes back)
      * @param packs        packs that parsed, by id
      * @param problems     errors and warnings, files and sources first, then validation
+     * @param origins      for template instances (by technology or pack id): where each value came from (D27)
      */
     public record Snapshot(Map<ResourceLocation, Technology> technologies, Map<String, TechDefinition> definitions,
-          Map<ResourceLocation, PackDefinition> packs, List<Problem> problems) {
+          Map<ResourceLocation, PackDefinition> packs, List<Problem> problems, Map<String, Map<String, TemplateEngine.Origin>> origins) {
 
         public Snapshot {
             technologies = java.util.Collections.unmodifiableMap(new LinkedHashMap<>(technologies));
             definitions = java.util.Collections.unmodifiableMap(new LinkedHashMap<>(definitions));
             packs = java.util.Collections.unmodifiableMap(new LinkedHashMap<>(packs));
             problems = List.copyOf(problems);
+            origins = java.util.Collections.unmodifiableMap(new LinkedHashMap<>(origins));
         }
 
         public static Snapshot empty() {
-            return new Snapshot(Map.of(), Map.of(), Map.of(), List.of());
+            return new Snapshot(Map.of(), Map.of(), Map.of(), List.of(), Map.of());
         }
 
         public long errors() {
@@ -70,8 +79,28 @@ public final class TechRepository {
 
     public static Snapshot load(Path configDir, TechTypes types, Function<String, Optional<StageModel>> stages, Collection<LabTypeModel> labTypes) {
         List<Problem> problems = new ArrayList<>();
+        Map<String, Map<String, TemplateEngine.Origin>> origins = new LinkedHashMap<>();
+
+        Map<String, Template> templates = new LinkedHashMap<>(BuiltInTemplates.all());
+        for (Map.Entry<String, JsonObject> file : readFolder(configDir.resolve("templates"), "templates", problems).entrySet()) {
+            String path = file.getKey();
+            Optional<String> id = TechJson.idFromPath(path.substring("templates/".length()));
+            if (id.isEmpty()) {
+                problems.add(Problem.error(path, INVALID_FILE, "file name must be lower case [a-z0-9_./-] and end in .json"));
+                continue;
+            }
+            TemplateJson.Parsed parsed = TemplateJson.parse(id.get(), file.getValue(), types.templateKinds());
+            parsed.errors().forEach(e -> problems.add(Problem.error(path, INVALID_DEFINITION, e)));
+            parsed.template().ifPresent(t -> {
+                if (templates.containsKey(t.id())) {
+                    problems.add(Problem.warning(t.id(), OVERRIDDEN, path + " replaces the built-in template"));
+                }
+                templates.put(t.id(), t);
+            });
+        }
 
         Map<ResourceLocation, PackDefinition> packs = new TreeMap<>();
+        TemplateEngine packTemplates = new TemplateEngine(templates, id -> false);
         for (Map.Entry<String, JsonObject> file : readFolder(configDir.resolve("packs"), "packs", problems).entrySet()) {
             String path = file.getKey();
             Optional<String> id = TechJson.idFromPath(path.substring("packs/".length()));
@@ -79,11 +108,19 @@ public final class TechRepository {
                 problems.add(Problem.error(path, INVALID_FILE, "file name must be lower case [a-z0-9_./-] and end in .json"));
                 continue;
             }
-            PackJson.Parsed parsed = PackJson.parse(id.get(), file.getValue());
+            Optional<JsonObject> json = expand(packTemplates, BuiltInTemplates.PACK_KIND, id.get(), path, file.getValue(), problems, origins);
+            if (json.isEmpty()) {
+                continue;
+            }
+            PackJson.Parsed parsed = PackJson.parse(id.get(), json.get());
             parsed.errors().forEach(e -> problems.add(Problem.error(path, INVALID_DEFINITION, e)));
-            parsed.definition().ifPresent(p -> packs.put(ResourceLocation.parse(p.id()), p));
+            parsed.definition().ifPresent(p -> packs.put(ResourceLocation.parse(p.id()), p.withJson(file.getValue())));
         }
 
+        TemplateEngine techTemplates = new TemplateEngine(templates, id -> {
+            ResourceLocation rl = ResourceLocation.tryParse(id);
+            return rl != null && packs.containsKey(rl);
+        });
         Map<String, TechDefinition> definitions = new LinkedHashMap<>();
         Map<String, String> origin = new LinkedHashMap<>();
         for (Map.Entry<String, JsonObject> file : readFolder(configDir.resolve("technologies"), "technologies", problems).entrySet()) {
@@ -93,7 +130,8 @@ public final class TechRepository {
                 problems.add(Problem.error(path, INVALID_FILE, "file name must be lower case [a-z0-9_./-] and end in .json"));
                 continue;
             }
-            add(id.get(), path, file.getValue(), definitions, origin, problems);
+            expand(techTemplates, BuiltInTemplates.TECHNOLOGY_KIND, id.get(), path, file.getValue(), problems, origins)
+                  .ifPresent(json -> add(id.get(), path, json, file.getValue(), definitions, origin, problems));
         }
         for (TechSource source : types.sources()) {
             List<Map.Entry<ResourceLocation, JsonElement>> supplied = new ArrayList<>();
@@ -108,7 +146,9 @@ public final class TechRepository {
                     problems.add(Problem.error(entry.getKey().toString(), INVALID_DEFINITION, where + ": definition must be a JSON object"));
                     continue;
                 }
-                add(entry.getKey().toString(), where, entry.getValue().getAsJsonObject(), definitions, origin, problems);
+                JsonObject sourceJson = entry.getValue().getAsJsonObject();
+                expand(techTemplates, BuiltInTemplates.TECHNOLOGY_KIND, entry.getKey().toString(), where, sourceJson, problems, origins)
+                      .ifPresent(json -> add(entry.getKey().toString(), where, json, sourceJson, definitions, origin, problems));
             }
         }
 
@@ -130,14 +170,30 @@ public final class TechRepository {
                 enabled.put(id, tech);
             }
         });
-        return new Snapshot(enabled, definitions, packs, problems);
+        return new Snapshot(enabled, definitions, packs, problems, origins);
     }
 
-    private static void add(String id, String where, JsonObject json, Map<String, TechDefinition> definitions, Map<String, String> origin,
-          List<Problem> problems) {
+    /**
+     * A template instance resolved to a plain definition (D27: the file keeps its link); a plain file
+     * as is. Errors disable only this instance.
+     */
+    private static Optional<JsonObject> expand(TemplateEngine engine, String kind, String id, String where, JsonObject json,
+          List<Problem> problems, Map<String, Map<String, TemplateEngine.Origin>> origins) {
+        if (!TemplateEngine.isInstance(json)) {
+            return Optional.of(json);
+        }
+        TemplateEngine.Resolution resolution = engine.resolve(kind, json);
+        resolution.errors().forEach(e -> problems.add(Problem.error(id, TEMPLATE_ERROR, where + ": " + e)));
+        resolution.warnings().forEach(w -> problems.add(Problem.warning(id, TEMPLATE_WARNING, where + ": " + w)));
+        resolution.json().ifPresent(j -> origins.put(id, resolution.origins()));
+        return resolution.json();
+    }
+
+    private static void add(String id, String where, JsonObject json, JsonObject file, Map<String, TechDefinition> definitions,
+          Map<String, String> origin, List<Problem> problems) {
         TechJson.Parsed parsed = TechJson.parse(id, json);
         parsed.errors().forEach(e -> problems.add(Problem.error(id, INVALID_DEFINITION, where + ": " + e)));
-        parsed.definition().ifPresent(definition -> {
+        parsed.definition().map(d -> d.withJson(file)).ifPresent(definition -> {
             String previous = origin.get(id);
             if (previous != null) {
                 problems.add(Problem.warning(id, OVERRIDDEN, where + " replaces the definition from " + previous));

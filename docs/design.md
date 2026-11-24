@@ -570,7 +570,7 @@ An instance in a technology file keeps the link instead of a copy:
 
 - Resolution order: root template → each `extends` child → `params` → `overrides` → KubeJS `modify`. Later wins, field by field.
 - JSON templates know `${param}` substitution and the curves built into Java templates such as `hstg_labs:tiered`, and a small expression language (decision D24): any string value starting with = is evaluated, e.g. "units": "=base\_units \* factor^(tier - 1)". It knows numbers, params, + − × ÷ ^, min, max, round, floor, ceil and if(cond, a, b); no loops, no side effects, a length limit, evaluated once per resolution. The parser lives in core (pure Java, fuzz-tested) unless WP-07a finds a bundled library such as EvalEx (Apache-2.0) cheaper. KubeJS templates remain plain JavaScript.
-- Params are typed (`int`, `number`, `color`, `id`, `id_list`, `string`) with defaults. A missing required param is an error; an unknown one is a warning.
+- Params are typed (`int`, `number`, `color`, `id`, `id_list`, `string`) with defaults. A missing required param is an error; an unknown one is a warning. A template declares its params in a `declare` block, either `"tier": "int"` or `"lab_tier": { "type": "int", "default": "=tier" }`; a default may be an `=` expression over other params. `params` then sets values for its own or inherited params (added in WP-07a).
 - `extends` cycles, unknown templates and a kind mismatch are errors that disable only the affected instances.
 - Instances stay linked to their template (decision D27). The dev UI shows each value's origin (template, param, override) and can detach an instance into a plain definition.
 - Validation (§8.3) runs on the resolved result, so a template can never produce what a hand-written file could not.

@@ -24,4 +24,9 @@ public record PackDefinition(String id, String name, int color, int tier, Option
     public JsonObject json() {
         return json.deepCopy();
     }
+
+    /** The same pack, written back as {@code file} (a template instance keeps its link, D27). */
+    public PackDefinition withJson(JsonObject file) {
+        return new PackDefinition(id, name, color, tier, model, file);
+    }
 }

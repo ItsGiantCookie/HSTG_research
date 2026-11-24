@@ -70,3 +70,11 @@ reshaped or deleted by the WP named.
 - WP-07 decision to confirm: when a tech source supplies an id that a file already defines, the later one
   wins (files, then addon sources, then KubeJS) with an `overridden` warning. D3 gives the order but not
   whether later sources replace or only add.
+- WP-07a left for later (docs/design.md §8.6):
+  - **WP-09 / WP-14 / WP-18:** the template kinds `pack_item`, `chemical_pack`, `lab_block`, `lab_type`
+    and `network_preset`, and the built-in templates of those kinds.
+  - **WP-17/18:** KubeJS `modify` as the last resolution step, and JS templates.
+  - **WP-12/13:** origin badges and "detach" in the dev UI. `TechRepository.Snapshot.origins()` already
+    holds the data, by technology or pack id.
+  - **WP-07a design addition to confirm:** templates declare typed params in a `declare` block. §8.6
+    named typed params but showed no place to declare them.

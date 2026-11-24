@@ -65,7 +65,8 @@ public final class TechRepositoryTests {
     }
 
     private static TechTypes types(Collection<TechSource> sources) {
-        return new TechTypes(ApiRegistries.INGREDIENT_TYPES::get, ApiRegistries.LAB_REQUIREMENT_TYPES::get, ApiRegistries.REWARD_TYPES::get, sources);
+        return new TechTypes(ApiRegistries.INGREDIENT_TYPES::get, ApiRegistries.LAB_REQUIREMENT_TYPES::get, ApiRegistries.REWARD_TYPES::get, sources,
+              kind -> ApiRegistries.TEMPLATE_KINDS.contains(ResourceLocation.parse(kind)));
     }
 
     private static Path folder(Map<String, String> files) {

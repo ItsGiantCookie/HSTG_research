@@ -58,6 +58,25 @@ always listed here (docs/design.md §9.1). Every API type is `@ApiStatus.Experim
   `TechDefinitionsReloadedEvent` is fired afterwards.
 - **Creative tab** `hstg_labs:main` with every item, one stack per loaded science pack.
 
+### Templates (WP-07a)
+
+- **Template files:** `config/hstg_labs/templates/**.json` with `kind`, `extends`, `declare` (typed
+  params: `int`, `number`, `color`, `id`, `id_list`, `string`), `params` and `defaults`
+  (docs/design.md §8.6).
+- **Linked instances (D27):** a technology or pack file with `template`, `params` and `overrides`
+  stays linked to its template. Changing the template rebalances every instance on the next
+  `/reload`, the file keeps its link when written back, and every resolved value records where it
+  came from (template, param, the file, or overrides).
+- **Resolution order:** root template, each `extends` child, params, the instance's own fields, then
+  overrides. Extends cycles, unknown templates and kind mismatches disable only that instance;
+  unknown params are warnings.
+- **Expressions (D24):** `=` expressions in templates (`+ - * / ^`, comparisons, `min`, `max`,
+  `round`, `floor`, `ceil`, `if`), with a length and nesting limit, in `core/expr`. I wrote our own
+  small parser (fuzz-tested) instead of adding EvalEx, which keeps dependencies unchanged.
+- **Built-in templates:** `hstg_labs:tiered` (technology) and `hstg_labs:data_flask` (pack). Template
+  kinds `hstg_labs:technology` and `hstg_labs:pack` are registered through `RegisterTemplateKindsEvent`.
+- **Fix:** two `/reload`s finishing in the same tick no longer skip the second load.
+
 ### Development
 
 - Demo addon (`demo/`): registers one of every extension point using only `api`. Enabled with
