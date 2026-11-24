@@ -206,6 +206,17 @@ tasks.named('jacocoTestCoverageVerification', JacocoCoverageVerification) {
     }
 }
 
+// WP-08: our own History Stages fixture stages for GameTests (docs/design.md §14), copied in before the
+// GameTest server starts. Ids start with hstg_test_ so they never collide with a pack's stages.
+def copyHsFixtures = tasks.register('copyHsFixtures', Copy) {
+    from 'testpack/hs-fixtures'
+    exclude 'README.md'
+    into 'run/config/historystages'
+}
+tasks.matching { it.name == 'runGameTestServer' }.configureEach {
+    dependsOn copyHsFixtures
+}
+
 tasks.named('check') {
     dependsOn 'jacocoTestCoverageVerification'
 }

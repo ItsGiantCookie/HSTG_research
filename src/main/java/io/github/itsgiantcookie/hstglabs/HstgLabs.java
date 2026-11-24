@@ -10,9 +10,15 @@ import io.github.itsgiantcookie.hstglabs.research.TechReloader;
 import io.github.itsgiantcookie.hstglabs.mek.ChemicalIngredientType;
 import io.github.itsgiantcookie.hstglabs.packet.PackSyncPayload;
 import io.github.itsgiantcookie.hstglabs.tech.BuiltInTypes;
+import io.github.itsgiantcookie.hstglabs.hs.HistoryStagesBridge;
+import io.github.itsgiantcookie.hstglabs.research.BuiltInOwners;
+import io.github.itsgiantcookie.hstglabs.research.LabsConfig;
+import io.github.itsgiantcookie.hstglabs.research.ResearchManager;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 
 @Mod(HstgLabs.MODID)
@@ -20,8 +26,9 @@ public final class HstgLabs {
 
     public static final String MODID = "hstg_labs";
 
-    public HstgLabs(IEventBus modBus) {
+    public HstgLabs(IEventBus modBus, ModContainer container) {
         Registration.register(modBus);
+        container.registerConfig(ModConfig.Type.SERVER, LabsConfig.SPEC);
         modBus.addListener(ModCapabilities::register);
         modBus.addListener(CycleFacePayload::register);
         modBus.addListener(LabButtonPayload::register);
@@ -34,6 +41,10 @@ public final class HstgLabs {
         ChemicalIngredientType.register(modBus);
         modBus.addListener(PackSyncPayload::register);
         TechReloader.register();
+        // WP-08: owners, the research manager, and History Stages through the hs bridge only
+        BuiltInOwners.register(modBus);
+        ResearchManager.register(HistoryStagesBridge.INSTANCE);
+        HistoryStagesBridge.listen(ResearchManager.stageListener());
         if (DemoAddon.enabled()) {
             DemoAddon.register(modBus);
         }

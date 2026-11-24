@@ -141,3 +141,13 @@ No team id in the HS api (confirms D31: key teams by the FTB Teams UUID).
 | Is the stage loaded | `@Nullable public static StageEntry findStage(String stageId)` | `api/stage/StageStates.java:121-122` | `null` for an unknown id; global first, then individual |
 | Mode for D10 | `public StageMode getMode()`; `StageMode.EXTERNAL` | `data/StageEntry.java:700`, `data/StageMode.java:23` | allowlisted `data` types |
 | Revalidate on HS reload | `public class StageDefinitionsChangedEvent extends Event` | `api/stage/StageDefinitionsChangedEvent.java:22` | Javadoc (`:15-17`): posted from the server tick on a dedicated server, but from the **client tick** on a client connected to a remote server; our listener only reloads when it runs on our server's thread |
+
+## WP-08: research manager (`hs/HistoryStagesBridge`)
+
+| Need | Signature / fact | Where | Notes |
+| --- | --- | --- | --- |
+| Scope of a stage | `public static StageScope scopeOf(String stageId)` | `api/stage/StageStates.java:132-136` | Returns `null` for an unknown id; global checked first |
+| Unlock cause | `StageEvent.getCause()`; `StageChangeCause.ADDON` is "Another mod, through the api. The default when nothing above applies" | `api/stage/StageEvent.java:40`, `api/stage/StageChangeCause.java:37-38` | Our `unlockGlobal` / `unlockIndividual` calls carry `ADDON` without extra work |
+| Refusals in `unlockGlobal` | unknown, already unlocked, lost (`LostStages.isLostGlobal`), logic block (`StageLogicGate`), veto (`BeforeUnlock`) | `api/stage/StageStates.java:266-279` | Every refusal returns `false`; we treat all of them as BLOCKED (D32) |
+| Offline individual unlock | `unlockIndividual(String, UUID, MinecraftServer)`: online → the player overload; offline → written + synced at next login | `api/stage/StageStates.java:375-378` | Used for team members who are offline (§5.10) |
+| Stage files (GameTest fixtures only) | `config/historystages/global/<id>.json` and `individual/<id>.json`; fields `display_name`, `mode` (`"external"`), `share_with_team`; missing lists default to empty | `ConfigHandler.java:17-30`, `data/StageEntry.java:37-40, 149, 246-247` | We never write HS config at runtime; `testpack/hs-fixtures` holds our own minimal files, copied by Gradle before GameTests |
