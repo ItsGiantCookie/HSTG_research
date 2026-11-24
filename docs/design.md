@@ -38,7 +38,7 @@ Build against HS 6.2.0-1.21.1 (published on Modrinth 2026-11-21, git tag `6.2.0-
 | History Stages | 6.2.0-1.21.1 | `[6.2,7.0)`, required, `AFTER` | Modrinth Maven: `maven.modrinth:history-stages:6.2.0-1.21.1` |
 | Lootr | as HS build uses | — | Required by HS; HS will not load without it, dev env included |
 | KubeJS | 2101.7.2-build.374 | `[2101.7,)`, optional | `compileOnly` + `localRuntime`, same as HS; needs the JitPack repo at runtime |
-| Mekanism | 1.21.1-10.7.19.85 | `[10.7.19,10.8)`, required, `AFTER` | MIT. ModMaven: `mekanism:Mekanism:1.21.1-10.7.19.85`; the narrow range is there because we may use internals (§7.2, D22) |
+| Mekanism | 1.21.1-10.7.19.85 | `[10.7.19,10.8)`, required, `AFTER` | MIT. ModMaven: `mekanism:Mekanism:1.21.1-10.7.19.85`; the narrow range is there because `mek/client` uses Mekanism's GUI classes (§7.2, D22) |
 | Jade | latest 1.21.1 | optional | Lab tooltip only (M3) |
 | FTB Teams | latest 2101.x | optional | HS's default team provider; we read its team UUID (D31). Without it every player is a team of one |
 
@@ -61,7 +61,7 @@ dependencies {
     runtimeOnly    "curse.maven:lootr-361276:8695784"
     compileOnly    "dev.latvian.mods:kubejs-neoforge:2101.7.2-build.374"
     localRuntime   "dev.latvian.mods:kubejs-neoforge:2101.7.2-build.374"
-    implementation "mekanism:Mekanism:1.21.1-10.7.19.85"        // full jar; use :api if D22 = API only
+    implementation "mekanism:Mekanism:1.21.1-10.7.19.85"        // full jar: D22 (hybrid) uses Mekanism's client GUI classes
 }
 ```
 
@@ -257,7 +257,7 @@ Mekanism is a required dependency, so labs behave like Mekanism machines instead
 - **Chemicals as ingredients:** ingredient type `hstg_labs:chemical` (a chemical id or chemical tag, amount in mB). Consumers hold Mekanism chemical tanks next to their item slots, so a "liquid" science pack needs no item at all.
 - **Energy:** labs, servers and cores store Joules and accept both Mekanism strict energy and FE, as Mekanism machines do. `energy_per_tick` in lab types is in Joules.
 - **Upgrades:** Mekanism Speed and Energy upgrade cards fit labs and servers. Each card applies as a worker modifier through our modifier registry (§9), so it stacks with every other modifier the same way.
-- **Machine plumbing (if D22 allows internals):** side configuration and auto-eject on consumers, redstone control, the Configurator and Configuration Card, the Mekanism GUI look with gauges and an energy bar.
+- **Machine plumbing (our own code, D22 hybrid):** side configuration and auto-eject on consumers, redstone control, the Configurator and Configuration Card. The Mekanism GUI look with gauges and an energy bar comes from Mekanism's own GUI classes.
 - **Security:** Mekanism's owner and private/trusted modes on cores and lab blocks; dev-UI test tools respect it.
 - **Multiblock (M5):** a Research Facility built on our own data-driven patterns (D16); Mekanism blocks can appear in a pattern like any other block.
 - **Pack production:** science packs are made in Mekanism machines with ordinary Mekanism recipes, or the KubeJS Mekanism addon for scripts. Nothing in this mod is needed for that.
@@ -328,7 +328,7 @@ Base package `de.germanrangers.hstglabs` (decision D1).
 | `command` | `/hslabs`, including every dev-UI action as a subcommand | `api`, `research`, `tech`, `hs` |
 | `compat.kubejs`, `compat.jade` | Plugins, loaded only when the other mod is present; KubeJS lab block builder types | `api` only |
 | `demo` | Example addon, registered only with a system property in dev runs | `api` only |
-| `mek` | Mekanism adapter: chemical ingredient type, capabilities by name, energy and upgrade glue, lab base block entity and GUI pieces per D22, later the multiblock | api, core, Mekanism API; the only package allowed Mekanism internals |
+| `mek` | Mekanism adapter: chemical ingredient type, capabilities by name, energy and upgrade glue, side config, GUI pieces (D22 hybrid) | api, core, Mekanism API; `mek/client` alone may also use Mekanism's client GUI classes (`mekanism.client..`) |
 
 ### 6.2 Persistence
 
@@ -415,7 +415,7 @@ Mekanism is MIT-licensed (Aidan C. Brady), so unlike HS we may use and copy anyt
 
 **Rules for code that touches Mekanism**
 
-1. Imports outside `mekanism.api..` live only in our `mek` package; a guard test enforces it, as for HS. `core` imports no Mekanism at all.
+1. D22 (hybrid): outside `mekanism.api..` only Mekanism's client GUI classes (`mekanism.client..`), and only in `mek/client`; tile base, components, registration and attachments are not used. A guard test enforces it, as for HS. `core` imports no Mekanism at all.
 2. Facts before code: `ref/Mekanism` at the pinned tag, every signature recorded with `path:line` in `docs/mek-api-facts.md`.
 3. Our public `api` may name Mekanism API types (`ChemicalStack`), because Mekanism is required. It never names Mekanism internal types.
 4. Copying Mekanism code is allowed only where decision D22 says "vendor". A copied file keeps the MIT copyright notice in its header and is listed in `THIRD_PARTY_NOTICES`.
@@ -947,7 +947,7 @@ Decision gates inside a milestone block only the WP that needs them; the playtes
 | M2 WP-07 | `tech`: definition codec with `labs.requires`, file repository, ingredient types item / tag / pack / chemical, built-in requirement types, reward `unlock_stage`, pack item + pack files, validation | Codec round-trip and unknown-data survival tests; a broken file disables only its technology with a clear error; an unknown lab tag is reported; a ladder whose tier-2 labs are only unlockable by tier-2 research is flagged as a softlock | D3, D4, D10, D11 |
 | WP-07a | Template engine: kinds registry, JSON templates with extends, typed params, ${param} substitution, the = expression language (core parser, fuzz-tested), built-in curve hstg\_labs:tiered, instance resolution (template → params → overrides) with origin tracking, built-in data templates | Unit tests: resolution order, extends cycles refused, missing param error, unknown param warning; GameTest: editing a template file and /reload changes the cost of every linked technology | D24, D27 |
 | WP-08 | `hs` bridge + `ResearchManager` + `ResearchSavedData` | GameTests: units done → stage unlocked with cause `ADDON`; vetoed unlock keeps progress, marks `BLOCKED`; relock follows `on_relock`; progress survives save and reload; two FTB teams research independently; a joining member adopts the team's progress; an offline member gets the stage on login | D2, D5, D7, D31 |
-| WP-09 | Lab type loader + config overrides, base block classes on Mekanism's tile base or our own (per D22), Joule energy and upgrade slots, block entity types that collect every role block, basic lab | GameTests: hopper feeds packs; one speed-1 lab finishes U units in U × T ticks; breaking mid-unit credits nothing; `/reload` changes lab speed; a basic lab skips a gated technology with `LAB_REQUIREMENTS` | D6, D17, D22, D23 |
+| WP-09 | Lab type loader + config overrides, our own base block classes on Mekanism API types with screens on Mekanism's GUI classes (D22 hybrid), Joule energy and upgrade slots, block entity types that collect every role block, basic lab | GameTests: hopper feeds packs; one speed-1 lab finishes U units in U × T ticks; breaking mid-unit credits nothing; `/reload` changes lab speed; a basic lab skips a gated technology with `LAB_REQUIREMENTS` | D6, D17, D22, D23 |
 | WP-10 | Packets + `LabScreen` | Codec tests; GameTest: `QueueEdit` refuses a locked technology and a player without permission; client checklist (manual) | D9 |
 | WP-11 | `/hslabs` commands incl. `/hslabs tech …` and `/hslabs lab …` (headless parity), HS report section | GameTests run every command through the dispatcher | — |
 | M3 WP-12 | `DevEditService` + `TechEditor` facade, `DevEdit` / `DevSnapshot`, lab type overrides | GameTests: edit writes the file atomically and reloads; stale revision refused; non-op refused; a lab override changes speed live | D15 |
@@ -1023,7 +1023,7 @@ All 31 decisions were settled with Hendrik on 2026-11-24; the Decision column ho
 | D19 | What lab requirements count | Members present on the network vs active members (loaded, powered, inside capacity) | Active members | WP-15 | Decided |
 | D20 | Where one ingredient set comes from | One consumer must hold the whole set vs gathered across consumers | Across consumers, simulate then commit | WP-15 | Decided |
 | D21 | Mekanism as a dependency | Required vs optional compat module | Required, as Hendrik asked; lab types, energy and chemicals assume it | WP-01 | Decided |
-| D22 | How deep we build on Mekanism | (a) API jar only, own tile and GUI code · (b) internals (`TileEntityMekanism`, components, GUI, multiblock lib), all inside `mek/` · (c) vendor the needed internals as MIT copies | (b) inside `mek/`, with (c) as the fallback for a class that breaks in a 10.7.x update; confirm after the WP-05a spike | WP-05a | Decided |
+| D22 | How deep we build on Mekanism | (a) API jar only, own tile and GUI code · (b) internals (`TileEntityMekanism`, components, GUI, multiblock lib), all inside `mek/` · (c) vendor the needed internals as MIT copies | Chosen after the WP-05a spike: hybrid. Own block entities on Mekanism API types; screens on Mekanism's client GUI classes (`GuiMekanism`, gauges, bars) in `mek/client` only; (c) as the fallback for a GUI class that breaks in a 10.7.x update (docs/decisions/D22-mekanism-depth.md) | WP-05a | Decided |
 | D23 | Energy unit | Joules like Mekanism, FE accepted vs FE only | Joules | WP-09 | Decided |
 | D24 | Logic in JSON templates | `${param}` substitution + built-in Java curves · a small expression language · no JSON templates, KubeJS only | Chosen: a small sandboxed expression language in JSON templates (values starting with `=`) | WP-07a | Decided |
 | D25 | How KubeJS templates attach | `.template(id, params)` on our builder types · our own content event that registers objects itself | Chosen: own content event `HSLabsStartupEvents.content`, built on our public builder types | WP-18 | Decided |
@@ -1050,7 +1050,7 @@ All 31 decisions were settled with Hendrik on 2026-11-24; the Decision column ho
 | HS licence (All Rights Reserved) | Copied code or bundling would breach it | No copying, Modrinth Maven dependency only, rule in `CLAUDE.md` |
 | KubeJS or modded lab blocks are not covered by our block entity types | Their blocks place but never work | Build block entity types in the BLOCK\_ENTITY\_TYPE register event from every role block; GameTest with a KubeJS lab in WP-18 |
 | Lab requirements make research look stuck | Players think labs are broken | Queue warning when no site can run the head (D18); LAB\_TIER and LAB\_REQUIREMENTS idle reason naming the missing lab; met and missing icons in queue and tree |
-| Mekanism internals change in a 10.7.x patch release | Build or runtime break after a Mekanism update | Narrow range, CI against the newest 10.7.x, every internal use inside mek/, vendor the broken class as fallback (D22) |
+| Mekanism internals change in a 10.7.x patch release | Build or runtime break after a Mekanism update | Narrow range, CI against the newest 10.7.x, internals limited to GUI classes in mek/client, vendor the broken class as fallback (D22) |
 | Two required tech mods | Packs without Mekanism cannot use this mod | Accepted by D21; core stays Mekanism-free and api uses only Mekanism API types, so an optional split stays possible later |
 | Templates hide where a value comes from | Packmakers change a template and rebalance more than they meant to | Origin badges and an instance list in the dev UI; /hslabs template diff shows which technologies a template change touches before /reload |
 | A pack's tier ladder softlocks | Players can never build the next lab tier | Ladder checks on every reload and dev-UI edit (§8.3); the testpack ships a complete ladder as the worked example |
@@ -1101,8 +1101,9 @@ HS 6.2.0–6.x, Mekanism 10.7.19+ (required), KubeJS 2101.x (optional). Design: 
 ## Mekanism
 - Reference source: ref/Mekanism at tag v1.21.1-10.7.19.85. Record every signature
   you use in docs/mek-api-facts.md (path:line).
-- Imports outside mekanism.api.** only in mek/. Our api/ may name Mekanism API
-  types, never internal ones.
+- D22 = hybrid: outside mekanism.api.** only Mekanism's client GUI classes
+  (mekanism.client.**), and only in mek/client. No tile base, components,
+  registration or attachments. Our api/ may name Mekanism API types, never internal ones.
 - Get chemical/energy capabilities by name (mekanism:chemical_handler,
   mekanism:strict_energy_handler), not from mekanism.common.
 - MIT: copy code only where decision D22 says vendor; keep the MIT header and list

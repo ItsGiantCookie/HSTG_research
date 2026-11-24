@@ -33,10 +33,11 @@ class MekanismBoundaryTest {
     }
 
     @Test
-    void internalsInsideMekAndApiEverywherePass() {
-        var mek = BoundaryRules.planted("mek/Ok.java", """
-              package de.germanrangers.hstglabs.mek;
-              import mekanism.common.tile.base.TileEntityMekanism;
+    void guiClassesInMekClientAndApiEverywherePass() {
+        var gui = BoundaryRules.planted("mek/client/Ok.java", """
+              package de.germanrangers.hstglabs.mek.client;
+              import mekanism.client.gui.GuiMekanism;
+              import mekanism.client.gui.element.gauge.GuiChemicalGauge;
               class Ok {}
               """);
         var lab = BoundaryRules.planted("lab/Ok.java", """
@@ -44,7 +45,27 @@ class MekanismBoundaryTest {
               import mekanism.api.Action;
               class Ok {}
               """);
-        assertEquals(List.of(), BoundaryRules.mekanismViolations(List.of(mek, lab)));
+        assertEquals(List.of(), BoundaryRules.mekanismViolations(List.of(gui, lab)));
+    }
+
+    @Test
+    void commonInternalsFailEvenInMekD22() {
+        for (String path : List.of("mek/Bad.java", "mek/client/Bad.java")) {
+            String pkg = path.substring(0, path.lastIndexOf('/')).replace('/', '.');
+            var source = BoundaryRules.planted(path, "package de.germanrangers.hstglabs." + pkg + ";\n"
+                  + "import mekanism.common.tile.base.TileEntityMekanism;\nclass Bad {}\n");
+            assertFalse(BoundaryRules.mekanismViolations(List.of(source)).isEmpty(), path);
+        }
+    }
+
+    @Test
+    void guiClassesOutsideMekClientFail() {
+        for (String path : List.of("mek/Bad.java", "client/Bad.java")) {
+            String pkg = path.substring(0, path.lastIndexOf('/')).replace('/', '.');
+            var source = BoundaryRules.planted(path, "package de.germanrangers.hstglabs." + pkg + ";\n"
+                  + "class Bad { Object o = mekanism.client.gui.GuiMekanism.class; }\n");
+            assertFalse(BoundaryRules.mekanismViolations(List.of(source)).isEmpty(), path);
+        }
     }
 
     @Test

@@ -1,11 +1,10 @@
 # D22 — How deep we build on Mekanism
 
-Status: **Spike done, waiting for Hendrik to confirm or change** · Needed by: WP-09 (lab base classes) ·
-Spike: WP-05a
+Status: **Decided: hybrid** (Hendrik, 2026-11-24) · Needed by: WP-09 (lab base classes) · Spike: WP-05a
 
 The design (docs/design.md §15.1) chose (b) "internals inside `mek/`, with (c) vendoring as the
-fallback", to be confirmed after this spike. This file is the evidence. Nothing below has been decided
-by the agent.
+fallback", to be confirmed after this spike. After the spike Hendrik chose the hybrid option instead
+(see Decision).
 
 ## What was built
 
@@ -148,4 +147,38 @@ texture and shows a raw name.
 
 ## Decision
 
-_Waiting for Hendrik._
+**Hybrid** (Hendrik, 2026-11-24). This replaces the design's first choice (b).
+
+- **Logic and registration on our own base, Mekanism API types only.** This covers lab, core, consumer
+  and server block entities, their handlers, side config, upgrades, eject and persistence. The block
+  entity types stay as §5.5 designs them: built in the `BLOCK_ENTITY_TYPE` register event from every
+  lab-role block, so KubeJS and other mods' blocks are included.
+- **Mekanism's client GUI classes for drawing.** Screens extend `GuiMekanism` and use its gauges, bars
+  and energy tab. Side-config and upgrade windows stay ours, because Mekanism's need
+  `TileEntityMekanism`.
+- **Not used:** Mekanism's tile base, components, block types and attributes, registration helpers,
+  attachments.
+- **Fallback (c) stays:** if a GUI class breaks in a 10.7.x patch, vendor it as an MIT copy into
+  `mek/client`, with its header and a `THIRD_PARTY_NOTICES.md` entry.
+
+## Consequences
+
+- **Guard test enforces it:** `guard/BoundaryRules.mekanismViolations` (`MekanismBoundaryTest`). Rules:
+  - `mekanism.api..` is allowed anywhere.
+  - `mekanism.client..` is allowed only in `mek/client/`.
+  - Every other Mekanism package is refused everywhere, `mek/` included.
+- **Reimplement what (b) would have given for free**, in WP-09 for the basic lab and WP-15 for network
+  members. Each item gets its own WP step:
+  - chemical side-config tab
+  - FE next to Joules (D23)
+  - redstone control
+  - security tab
+  - comparator output
+  - keep contents on the dropped item
+- **Prototype code moves into the real implementation:**
+  - `mek/config/*`, `mek/UpgradeComponent` and the configurator overlay are kept and grown.
+  - `mek/client/MekGui` shrinks to whatever Mekanism's GUI classes do not cover.
+- **Facts:** every Mekanism GUI class we use gets a row in docs/mek-api-facts.md (`path:line`) before
+  it is used. The WP-05a spike rows show the gauge, bar and tab constructors.
+- **Still to verify in WP-09:** a `GuiMekanism` subclass over our own menu. It was only checked by
+  signature in the spike. The first GameTest-free check is the client checklist.

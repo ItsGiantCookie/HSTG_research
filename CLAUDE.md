@@ -40,8 +40,9 @@ Mod id `hstg_labs`, package `de.germanrangers.hstglabs`, MIT (D1).
 - Reference source: ref/Mekanism at tag v1.21.1-10.7.19.85 (read-only, git-ignored;
   `git clone --depth 1 --branch v1.21.1-10.7.19.85 https://github.com/mekanism/Mekanism.git ref/Mekanism`).
   Record every signature you use in docs/mek-api-facts.md (path:line).
-- Imports outside mekanism.api.** only in mek/. Our api/ may name Mekanism API
-  types, never internal ones.
+- D22 = hybrid: outside mekanism.api.** only Mekanism's client GUI classes
+  (mekanism.client.**), and only in mek/client. No tile base, components,
+  registration or attachments. Our api/ may name Mekanism API types, never internal ones.
 - Get chemical/energy capabilities by name (mekanism:chemical_handler,
   mekanism:strict_energy_handler), not from mekanism.common.
 - MIT: copy code only where decision D22 says vendor; keep the MIT header and list

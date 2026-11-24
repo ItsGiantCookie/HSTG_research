@@ -23,7 +23,9 @@ final class BoundaryRules {
 
     static final String MEK = "mekanism.";
     static final String MEK_API = "mekanism.api.";
-    static final String MEK_PACKAGE = "mek";
+    /** D22 = hybrid: the only internals allowed are Mekanism's client GUI classes, and only in mek/client. */
+    static final String MEK_CLIENT = "mekanism.client.";
+    static final String MEK_CLIENT_PACKAGE = "mek.client";
 
     static final List<String> CORE_FORBIDDEN = List.of("net.minecraft.", "net.neoforged.", HS, MEK, "com.mojang.");
     static final String CORE_PACKAGE = "core";
@@ -70,16 +72,22 @@ final class BoundaryRules {
         return out;
     }
 
-    /** Mekanism boundary: anything outside mekanism.api.. only inside mek/. */
+    /**
+     * Mekanism boundary (D22 = hybrid, docs/decisions/D22-mekanism-depth.md): mekanism.api.. anywhere;
+     * Mekanism's client classes (GuiMekanism, gauges, bars, tabs) only in mek/client; no other internal
+     * (tile base, components, registration, attachments) anywhere.
+     */
     static List<String> mekanismViolations(List<Source> sources) {
         List<String> out = new ArrayList<>();
         for (Source s : sources) {
-            if (s.inPackage(MEK_PACKAGE)) {
-                continue;
-            }
             for (String ref : s.references(MEK)) {
-                if (!ref.startsWith(MEK_API)) {
-                    out.add(SourceScanner.describe(s, "Mekanism internal used outside mek/: " + ref));
+                if (ref.startsWith(MEK_API)) {
+                    continue;
+                }
+                if (!ref.startsWith(MEK_CLIENT)) {
+                    out.add(SourceScanner.describe(s, "Mekanism internal outside its client GUI classes (D22): " + ref));
+                } else if (!s.inPackage(MEK_CLIENT_PACKAGE)) {
+                    out.add(SourceScanner.describe(s, "Mekanism GUI class used outside mek/client (D22): " + ref));
                 }
             }
         }
