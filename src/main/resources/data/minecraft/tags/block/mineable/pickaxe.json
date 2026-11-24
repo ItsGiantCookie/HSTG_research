@@ -1,0 +1,10 @@
+{
+  "values": [
+    "hstg_research:research_lab",
+    "hstg_research:data_consumer",
+    "hstg_research:basic_data_cable",
+    "hstg_research:advanced_data_cable",
+    "hstg_research:elite_data_cable",
+    "hstg_research:ultimate_data_cable"
+  ]
+}

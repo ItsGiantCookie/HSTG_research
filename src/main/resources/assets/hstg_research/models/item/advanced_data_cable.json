@@ -1,0 +1,6 @@
+{
+  "parent": "hstg_research:block/data_cable_item",
+  "textures": {
+    "cable": "hstg_research:block/data_cable/advanced"
+  }
+}

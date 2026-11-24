@@ -1,0 +1,304 @@
+{
+  "parent": "minecraft:block/block",
+  "render_type": "minecraft:solid",
+  "textures": {
+    "particle": "#cable"
+  },
+  "elements": [
+    {
+      "name": "core",
+      "from": [
+        5,
+        5,
+        5
+      ],
+      "to": [
+        11,
+        11,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#cable"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#cable"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#cable"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#cable"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#cable"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#cable"
+        }
+      }
+    },
+    {
+      "name": "arm_north",
+      "from": [
+        5,
+        5,
+        0
+      ],
+      "to": [
+        11,
+        11,
+        5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#cable",
+          "cullface": "north"
+        },
+        "up": {
+          "uv": [
+            0,
+            6,
+            6,
+            11
+          ],
+          "texture": "#cable"
+        },
+        "down": {
+          "uv": [
+            0,
+            6,
+            6,
+            11
+          ],
+          "texture": "#cable"
+        },
+        "east": {
+          "uv": [
+            6,
+            0,
+            11,
+            6
+          ],
+          "texture": "#cable"
+        },
+        "west": {
+          "uv": [
+            6,
+            0,
+            11,
+            6
+          ],
+          "texture": "#cable"
+        }
+      }
+    },
+    {
+      "name": "arm_south",
+      "from": [
+        5,
+        5,
+        11
+      ],
+      "to": [
+        11,
+        11,
+        16
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#cable",
+          "cullface": "south"
+        },
+        "up": {
+          "uv": [
+            0,
+            6,
+            6,
+            11
+          ],
+          "texture": "#cable"
+        },
+        "down": {
+          "uv": [
+            0,
+            6,
+            6,
+            11
+          ],
+          "texture": "#cable"
+        },
+        "east": {
+          "uv": [
+            6,
+            0,
+            11,
+            6
+          ],
+          "texture": "#cable"
+        },
+        "west": {
+          "uv": [
+            6,
+            0,
+            11,
+            6
+          ],
+          "texture": "#cable"
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.9,
+        0.9,
+        0.9
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        3,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        90,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.8,
+        0.8,
+        0.8
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        75,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        2.5,
+        0
+      ],
+      "scale": [
+        0.5,
+        0.5,
+        0.5
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    }
+  }
+}

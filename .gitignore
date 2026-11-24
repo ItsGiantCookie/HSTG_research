@@ -1,0 +1,29 @@
+# Gradle / build output
+.gradle/
+build/
+bin/
+out/
+repo/
+
+# Run directories (client, server, gametest)
+run/
+run-*/
+
+# Read-only reference checkouts (docs/design.md §12.1), cloned by hand at pinned tags
+ref/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Local Claude Code settings (shared settings.json stays tracked)
+.claude/settings.local.json
+**/__pycache__/
+
+# OS
+.DS_Store
+Thumbs.db

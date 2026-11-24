@@ -1,0 +1,1466 @@
+{
+  "meta": {
+    "id": "mekstyle",
+    "version": "1.2.0",
+    "updated": "2026-11-23",
+    "target": {
+      "minecraft": "1.21.1",
+      "loader": "neoforge",
+      "applies_to": [
+        "1.20.x",
+        "1.21.x"
+      ],
+      "tools": [
+        "Blockbench",
+        "Aseprite",
+        "LibreSprite",
+        "NeoForge datagen"
+      ]
+    },
+    "scope": "Visual language for industrial / tech mods in the vein of Mekanism: clean brushed-steel casings, tiered color accents, readable machine faces, restrained animation, strong functional color coding.\n",
+    "legal": {
+      "upstream": {
+        "project": "Mekanism",
+        "repo": "https://github.com/mekanism/Mekanism",
+        "branch": "1.21.x",
+        "license": "MIT",
+        "copyright": "Copyright (c) 2017-2025 Aidan C. Brady",
+        "note": "The MIT LICENSE has no exception for assets. The README credits several artists but states no separate terms."
+      },
+      "rules": [
+        {
+          "id": "LEGAL-01",
+          "level": "MUST",
+          "rule": "Mekanism textures/models may be copied and modified, but every build and the repo must ship the MIT license text with the upstream copyright line.",
+          "check": "exists(src/main/resources/licenses/mekanism/LICENSE.txt) and exists(THIRD_PARTY_NOTICES.md) when provenance has mekanism entries"
+        },
+        {
+          "id": "LEGAL-02",
+          "level": "MUST",
+          "rule": "Every imported or derived file has an entry in art/provenance.yaml (source path, upstream commit, modified yes/no).",
+          "check": "lint_textures.py --provenance art/provenance.yaml"
+        },
+        {
+          "id": "LEGAL-03",
+          "level": "MUST",
+          "rule": "Imported assets live in your own namespace (assets/<modid>/), never under assets/mekanism/ (no accidental resource overrides).",
+          "check": "no files under assets/mekanism/ in your mod"
+        },
+        {
+          "id": "LEGAL-04",
+          "level": "SHOULD",
+          "rule": "Don't use the Mekanism name or logo in a way that suggests your mod is official or endorsed.",
+          "check": null
+        },
+        {
+          "id": "LEGAL-05",
+          "level": "SHOULD",
+          "rule": "If your mod can run next to Mekanism, change at least the function zone or tint of reused machine faces so players can tell the blocks apart.",
+          "check": null
+        },
+        {
+          "id": "LEGAL-06",
+          "level": "MUST",
+          "rule": "Assets from any other source need their own license check and provenance entry; MIT coverage applies to Mekanism's repo only.",
+          "check": null
+        }
+      ]
+    },
+    "provenance": {
+      "manifest": "art/provenance.yaml",
+      "entry_fields": [
+        "file",
+        "source_repo",
+        "source_path",
+        "commit",
+        "license",
+        "modified",
+        "notes"
+      ],
+      "example": [
+        {
+          "file": "src/main/resources/assets/mymod/textures/block/crusher/front.png",
+          "source_repo": "https://github.com/mekanism/Mekanism",
+          "source_path": "src/main/resources/assets/mekanism/textures/block/crusher/front.png",
+          "commit": "4255aa7156dace1dd379c8bc6d52ab0275bd659c",
+          "license": "MIT",
+          "modified": false,
+          "notes": ""
+        }
+      ],
+      "tool": "scripts/import_mekanism.py"
+    }
+  },
+  "principles": [
+    {
+      "id": "P1",
+      "name": "Readability first",
+      "rule": "A player must identify block type, tier and state (idle/active/error) from 5 blocks away."
+    },
+    {
+      "id": "P2",
+      "name": "Vanilla-compatible pixel art",
+      "rule": "16x16 base resolution, hard pixel edges, no photo textures, no gradients without dithering steps."
+    },
+    {
+      "id": "P3",
+      "name": "Function drives form",
+      "rule": "Every visible feature (port, tank, fan, display) implies a function. No greebles without purpose."
+    },
+    {
+      "id": "P4",
+      "name": "Consistency over novelty",
+      "rule": "Shared casing, shared palette ramps, shared port language across all machines in the mod."
+    },
+    {
+      "id": "P5",
+      "name": "Calm when idle, alive when working",
+      "rule": "Idle machines are static; activity is shown by animation, emissive light and sound together."
+    },
+    {
+      "id": "P6",
+      "name": "Performance is part of the style",
+      "rule": "Prefer baked models + animated textures over BlockEntityRenderers. Animation must never cost TPS."
+    }
+  ],
+  "colors": {
+    "mekanism_reference": {
+      "description": "Measured from Mekanism machine faces (base/, crusher/, enrichment_chamber/, factory/*), 1.21.x @ 4255aa7.",
+      "neutral_share": 0.96,
+      "value_quantiles": {
+        "p02": 22,
+        "p15": 37,
+        "p30": 44,
+        "p45": 58,
+        "p60": 72,
+        "p75": 84,
+        "p90": 106,
+        "p98": 115
+      },
+      "darkest": "#0B0B0B",
+      "accent_brass": "#CAA84E",
+      "colors_per_16px_frame": {
+        "min": 15,
+        "median": 59,
+        "max": 83
+      },
+      "port_overlays": "neutral base (#A9A9A9 + #FFFFFF), tinted at runtime",
+      "pure_black_white_in_casings": 0
+    },
+    "steel_ramp": {
+      "description": "Neutral (pure gray) machine ramp aligned with Mekanism casings, darkest to lightest.",
+      "order": "dark_to_light",
+      "swatches": [
+        {
+          "key": "steel_0",
+          "hex": "#161616",
+          "use": "outlines, deep recesses, vents"
+        },
+        {
+          "key": "steel_1",
+          "hex": "#252525",
+          "use": "panel seams, inner shadow"
+        },
+        {
+          "key": "steel_2",
+          "hex": "#2C2C2C",
+          "use": "dark panels, screen bezel"
+        },
+        {
+          "key": "steel_3",
+          "hex": "#3A3A3A",
+          "use": "casing shadow side"
+        },
+        {
+          "key": "steel_4",
+          "hex": "#484848",
+          "use": "casing base tone"
+        },
+        {
+          "key": "steel_5",
+          "hex": "#545454",
+          "use": "casing lit side, frame"
+        },
+        {
+          "key": "steel_6",
+          "hex": "#6A6A6A",
+          "use": "bevel highlight, bolt heads"
+        },
+        {
+          "key": "steel_7",
+          "hex": "#737373",
+          "use": "brightest casing pixel / specular (max 2%)"
+        }
+      ],
+      "brass_accent": {
+        "hex": "#CAA84E",
+        "use": "trim, rivets, decorative band (Mekanism accent)"
+      },
+      "rules": [
+        {
+          "id": "COL-01",
+          "level": "MUST",
+          "rule": "Machine casings are neutral; at least 85% of opaque pixels have HSV saturation <= 0.08 (active/on states >= 70%, SHOULD). Color lives in accents, ports, indicators.",
+          "check": "neutral_share(texture) >= 0.85 (>= 0.70 for *_active|*_on) for machine-face globs"
+        },
+        {
+          "id": "COL-03",
+          "level": "MAY",
+          "rule": "Own-drawn casings may be checked against the exact palette (steel_ramp + tiers + semantic + status + brass).",
+          "check": "lint_textures.py --strict-palette"
+        },
+        {
+          "id": "COL-02",
+          "level": "SHOULD",
+          "rule": "Neighbouring shades differ by one ramp step; skip at most one step at a hard edge.",
+          "check": null
+        }
+      ]
+    },
+    "tiers": {
+      "note": "Use as hue anchors; build own 4-step ramps around them.",
+      "reference_source": "mekanism/api/tier/BaseTier.java (1.21.x)",
+      "entries": [
+        {
+          "tier": "basic",
+          "reference_rgb": [
+            95,
+            255,
+            184
+          ],
+          "reference_hex": "#5FFFB8",
+          "ramp": [
+            "#1F6B4C",
+            "#2FA874",
+            "#5FFFB8",
+            "#B5FFDD"
+          ]
+        },
+        {
+          "tier": "advanced",
+          "reference_rgb": [
+            255,
+            128,
+            106
+          ],
+          "reference_hex": "#FF806A",
+          "ramp": [
+            "#7A2C22",
+            "#C24E3D",
+            "#FF806A",
+            "#FFC2B6"
+          ]
+        },
+        {
+          "tier": "elite",
+          "reference_rgb": [
+            75,
+            248,
+            255
+          ],
+          "reference_hex": "#4BF8FF",
+          "ramp": [
+            "#156A70",
+            "#22AEB5",
+            "#4BF8FF",
+            "#B0FCFF"
+          ]
+        },
+        {
+          "tier": "ultimate",
+          "reference_rgb": [
+            247,
+            135,
+            255
+          ],
+          "reference_hex": "#F787FF",
+          "ramp": [
+            "#6E2A74",
+            "#B24FBC",
+            "#F787FF",
+            "#FCCBFF"
+          ]
+        },
+        {
+          "tier": "creative",
+          "reference_rgb": [
+            88,
+            88,
+            88
+          ],
+          "reference_hex": "#585858",
+          "ramp": [
+            "#1A1A1A",
+            "#3A3A3A",
+            "#585858",
+            "#8A8A8A"
+          ]
+        }
+      ],
+      "rules": [
+        {
+          "id": "COL-10",
+          "level": "MUST",
+          "rule": "Tier is shown by an accent (trim, stripe, corner pieces, LED band), never by recoloring the whole casing.",
+          "check": "accent_pixels / opaque_pixels <= 0.25 for tiered block textures"
+        },
+        {
+          "id": "COL-11",
+          "level": "MUST",
+          "rule": "Tier accent placement is identical across all tiers of the same block, only the hue changes.",
+          "check": "diff(mask(tier_a), mask(tier_b)) == 0"
+        },
+        {
+          "id": "COL-12",
+          "level": "SHOULD",
+          "rule": "Generate tier variants from one grayscale accent mask + tint (datagen, tint index or palette swap script).",
+          "check": null
+        }
+      ]
+    },
+    "semantic": {
+      "energy": {
+        "hex": "#3DDC5A",
+        "dark": "#1D7A2E",
+        "meaning": "power, FE storage, energy ports"
+      },
+      "item_in": {
+        "hex": "#D9433A",
+        "dark": "#7A1F1A",
+        "meaning": "item / generic input"
+      },
+      "item_out": {
+        "hex": "#3A7BD9",
+        "dark": "#1A3A7A",
+        "meaning": "item / generic output"
+      },
+      "in_out": {
+        "hex": "#9B4BD9",
+        "dark": "#4A1F7A",
+        "meaning": "bidirectional port"
+      },
+      "extra": {
+        "hex": "#E6C03A",
+        "dark": "#7A621A",
+        "meaning": "secondary input (catalyst, upgrade, fuel)"
+      },
+      "fluid": {
+        "hex": "#3AB6D9",
+        "dark": "#1A5C7A",
+        "meaning": "fluid port/tank (actual fluid uses its own tint)"
+      },
+      "chemical": {
+        "hex": "#E6E6E6",
+        "dark": "#6E6E6E",
+        "meaning": "chemical port; contents tinted by chemical color"
+      },
+      "heat": {
+        "hex": "#FF7A1F",
+        "dark": "#8A3A0A",
+        "meaning": "heat transfer, thermal parts"
+      },
+      "disabled": {
+        "hex": "#4A4F55",
+        "dark": "#2A2D31",
+        "meaning": "port off / side not configured"
+      },
+      "data": {
+        "hex": "#FFFFFF",
+        "dark": "#6E6E6E",
+        "gui": "#2FD3B4",
+        "meaning": "data cable body (hstg_research, white/neutral). gui = data signature color: side-config Data tab tint, GUI data bar, data icon accents. Ports themselves use the port-type colors (Output = Mekanism DARK_BLUE), like items/energy"
+      },
+      "rules": [
+        {
+          "id": "COL-20",
+          "level": "MUST",
+          "rule": "A semantic color is never reused for decoration. Green always means energy, red/blue always mean input/output.",
+          "check": "semantic colors only inside regions tagged port|gauge|led|indicator"
+        },
+        {
+          "id": "COL-21",
+          "level": "MUST",
+          "rule": "Never rely on color alone; pair with shape (arrow, notch, icon) for colorblind players.",
+          "check": null
+        }
+      ]
+    },
+    "status": {
+      "idle": {
+        "hex": "#5A6470",
+        "emissive": false
+      },
+      "active": {
+        "hex": "#4BF8FF",
+        "emissive": true
+      },
+      "warning": {
+        "hex": "#FFC23A",
+        "emissive": true
+      },
+      "error": {
+        "hex": "#FF3A3A",
+        "emissive": true
+      },
+      "no_power": {
+        "hex": "#2A2D31",
+        "emissive": false
+      }
+    },
+    "global_rules": [
+      {
+        "id": "COL-30",
+        "level": "MUST",
+        "rule": "No pure black (#000000) or pure white (#FFFFFF) in opaque casing pixels. Exception — tint bases/overlays (overlay/, *_tint*, *mask*), where white is the tint carrier.",
+        "check": "count(#000000|#FFFFFF, alpha>0) == 0 outside overlay/|*_tint*|*mask*"
+      },
+      {
+        "id": "COL-31",
+        "level": "SHOULD",
+        "rule": "Max 96 distinct opaque colors per 16x16 frame (Mekanism median 59, max 83). Own pixel art aims for <= 32.",
+        "check": "unique_colors(frame) <= 96"
+      },
+      {
+        "id": "COL-32",
+        "level": "SHOULD",
+        "rule": "Hue-shift ramps (shadows toward blue/violet, highlights toward warm/neutral) instead of pure value changes on colored materials.",
+        "check": null
+      },
+      {
+        "id": "COL-33",
+        "level": "MUST",
+        "rule": "Emissive colors are saturated but not neon-on-neon; an emissive pixel must sit next to a steel_0..steel_2 pixel for contrast.",
+        "check": null
+      }
+    ]
+  },
+  "textures": {
+    "format": {
+      "file_type": "png",
+      "color_mode": "RGBA 8-bit",
+      "base_resolution": 16,
+      "allowed_sizes": {
+        "block_faces": [
+          16,
+          32
+        ],
+        "model_sheets": [
+          16,
+          32,
+          64,
+          128,
+          256
+        ]
+      },
+      "animated_strip": "vertical",
+      "rules": [
+        {
+          "id": "TEX-01",
+          "level": "MUST",
+          "rule": "Block faces and items are 16 wide (32 for detailed animated faces); model sheets are power-of-two up to 256. Height is a multiple of width.",
+          "check": "width in allowed_sizes[folder] and height % width == 0"
+        },
+        {
+          "id": "TEX-02",
+          "level": "MUST",
+          "rule": "Alpha is binary (0 or 255) on cutout textures; partial alpha only on textures used with a translucent render type.",
+          "check": "render_type in [cutout, cutout_mipped] => alpha ∈ {0,255}"
+        },
+        {
+          "id": "TEX-03",
+          "level": "MUST",
+          "rule": "Custom-model texture sheets keep texel density at 16 px per block (1 px == 1 u). No mixed densities on one model.",
+          "check": "uv_area_px / face_area_u ≈ 1 (tolerance 0.1)"
+        },
+        {
+          "id": "TEX-04",
+          "level": "MUST",
+          "rule": "No anti-aliasing, blur, noise filters or upscaled art. Hand-placed pixels only.",
+          "check": "no isolated pixels with alpha 1..254 on opaque textures"
+        }
+      ]
+    },
+    "lighting": {
+      "light_source": "top_left",
+      "rules": [
+        {
+          "id": "TEX-10",
+          "level": "MUST",
+          "rule": "Shade within a face only (bevels, panels). Do not bake directional face shading — the engine already darkens sides and bottom.",
+          "check": null
+        },
+        {
+          "id": "TEX-11",
+          "level": "SHOULD",
+          "rule": "Raised elements get a 1 px highlight top/left and a 1 px shadow bottom/right; recessed elements invert this.",
+          "check": null
+        }
+      ]
+    },
+    "casing_anatomy": {
+      "description": "Standard machine casing face (16x16) from outside in.",
+      "layers": [
+        {
+          "name": "outer_frame",
+          "width_px": 1,
+          "colors": [
+            "steel_1",
+            "steel_5"
+          ],
+          "note": "1 px frame; lit top/left, dark bottom/right"
+        },
+        {
+          "name": "frame_bevel",
+          "width_px": 1,
+          "colors": [
+            "steel_3",
+            "steel_6"
+          ],
+          "optional": true
+        },
+        {
+          "name": "inner_panel",
+          "area": "remaining 12x12 or 10x10",
+          "colors": [
+            "steel_3",
+            "steel_4"
+          ],
+          "note": "low-contrast brushed pattern allowed"
+        },
+        {
+          "name": "function_zone",
+          "note": "front face only: screen, intake, output, port"
+        }
+      ],
+      "fasteners": {
+        "max_bolts_per_face": 4,
+        "placement": "corners_only",
+        "size_px": 1
+      },
+      "rules": [
+        {
+          "id": "TEX-20",
+          "level": "MUST",
+          "rule": "All machines share the same outer frame and corner treatment so blocks tile as one family.",
+          "check": "border_ring(face) matches casing_template border_ring"
+        },
+        {
+          "id": "TEX-21",
+          "level": "SHOULD",
+          "rule": "Brushed-metal texture is max 1 ramp step of variation and runs horizontally on sides, uniformly on top.",
+          "check": null
+        },
+        {
+          "id": "TEX-22",
+          "level": "MUST",
+          "rule": "Panel seams line up across adjacent faces of the same block (edges meet at the same pixel row).",
+          "check": null
+        }
+      ]
+    },
+    "faces": {
+      "front": {
+        "role": "identity: what the machine does",
+        "detail": "high",
+        "required": true
+      },
+      "top": {
+        "role": "vents, hatch or tier stripe",
+        "detail": "medium"
+      },
+      "sides": {
+        "role": "casing + optional port",
+        "detail": "low"
+      },
+      "back": {
+        "role": "power/IO panel",
+        "detail": "medium"
+      },
+      "bottom": {
+        "role": "plain casing",
+        "detail": "lowest"
+      },
+      "rules": [
+        {
+          "id": "TEX-30",
+          "level": "MUST",
+          "rule": "Exactly one face (front) carries the machine's identifying graphic. Other faces stay family-generic.",
+          "check": null
+        },
+        {
+          "id": "TEX-31",
+          "level": "SHOULD",
+          "rule": "Front graphic is readable as a silhouette at 50% scale (think icon, not illustration).",
+          "check": null
+        }
+      ]
+    },
+    "states": {
+      "variants": [
+        false,
+        true
+      ],
+      "optional_variants": [
+        "error"
+      ],
+      "rules": [
+        {
+          "id": "TEX-40",
+          "level": "MUST",
+          "rule": "The \"on\" texture differs only inside the function_zone and indicator pixels; frame and casing are identical.",
+          "check": "diff(off, on) ⊆ mask(function_zone ∪ indicators)"
+        },
+        {
+          "id": "TEX-41",
+          "level": "SHOULD",
+          "rule": "Implement on-state as an overlay layer (separate texture, emissive) rather than a full duplicate texture.",
+          "check": null
+        }
+      ]
+    },
+    "ports_and_overlays": {
+      "rules": [
+        {
+          "id": "TEX-50",
+          "level": "MUST",
+          "rule": "Side-config/port overlays are separate neutral textures (gray",
+          "check": "overlay/*.png neutral_share >= 0.95"
+        },
+        {
+          "id": "TEX-51",
+          "level": "MUST",
+          "rule": "Port graphic is a 6x6 to 8x8 centered square/ring with a shape cue (inward arrow = in, outward = out, bolt = energy).",
+          "check": "port_bbox in [6..8] px, centered ±1 px"
+        },
+        {
+          "id": "TEX-52",
+          "level": "SHOULD",
+          "rule": "Overlays use emissive at reduced brightness (block_light 8–12), never full 15, so they do not glow like lamps.",
+          "check": null
+        }
+      ]
+    },
+    "ctm": {
+      "rules": [
+        {
+          "id": "TEX-80",
+          "level": "MUST",
+          "rule": "Mekanism multiblock textures carry ConnectedTexturesMod data (`ctm` key in .mcmeta). Reuse them only if your mod depends on CTM, otherwise strip the key and ship the plain texture.",
+          "check": "if mcmeta has 'ctm' then dependency CTM declared"
+        }
+      ]
+    },
+    "material_items": {
+      "description": "Ore-processing chain items share one silhouette language per stage.",
+      "chain": [
+        "ore",
+        "dirty_dust",
+        "clump",
+        "shard",
+        "crystal",
+        "dust",
+        "ingot",
+        "nugget",
+        "block"
+      ],
+      "rules": [
+        {
+          "id": "TEX-60",
+          "level": "MUST",
+          "rule": "Each stage is one grayscale template; per-material variants are tint or palette-swap, not redrawn.",
+          "check": "silhouette(material_a, stage) == silhouette(material_b, stage)"
+        },
+        {
+          "id": "TEX-61",
+          "level": "MUST",
+          "rule": "Stages are distinguishable by silhouette alone (grayscale test).",
+          "check": "pairwise silhouette IoU between stages < 0.8"
+        },
+        {
+          "id": "TEX-62",
+          "level": "SHOULD",
+          "rule": "Item sprites keep a 1 px transparent margin and a dark (steel_0 or hue-dark) outline on the lower/right edge.",
+          "check": "bbox within [1..14]"
+        }
+      ]
+    },
+    "naming": {
+      "pattern": "<modid>:<block|item>/<name>[_<tier>][_<face>][_<state>]",
+      "alt_pattern": "<modid>:block/<machine>/<face>[_active]   (Mekanism folder layout; allowed)",
+      "examples": [
+        "mymod:block/crusher/front_active",
+        "mymod:block/crusher_front_on",
+        "mymod:block/casing_side",
+        "mymod:block/overlay/port_energy",
+        "mymod:item/clump_tinted"
+      ],
+      "rules": [
+        {
+          "id": "TEX-70",
+          "level": "MUST",
+          "rule": "snake_case, lowercase ASCII, no spaces. Faces from {front, back, side, left, right, top, bottom}, states from {off, on, active, error}. Pick one layout (flat or per-machine folder) for the whole mod.",
+          "check": "regex ^[a-z0-9_/]+$"
+        }
+      ]
+    }
+  },
+  "models": {
+    "formats": {
+      "preferred": "vanilla JSON block/item models (datagen-generated where possible)",
+      "complex": "Blockbench \"Java Block/Item\" export",
+      "dynamic_parts": "BlockEntityRenderer or baked sub-models for moving parts only",
+      "avoid": [
+        "OBJ for simple shapes",
+        "entity models for static blocks"
+      ]
+    },
+    "classes": [
+      {
+        "class": "simple_machine",
+        "geometry": "full cube",
+        "example": "crusher, smelter",
+        "detail": "texture only"
+      },
+      {
+        "class": "process_machine",
+        "geometry": "cube base + 2–6 detail elements (tanks, pipes, hatches)",
+        "example": "chemical processors"
+      },
+      {
+        "class": "generator",
+        "geometry": "custom model, clear moving part (rotor, piston)",
+        "example": "wind/heat generators"
+      },
+      {
+        "class": "transport",
+        "geometry": "center core + connection arms, multipart",
+        "example": "cables, pipes, tubes"
+      },
+      {
+        "class": "multiblock_part",
+        "geometry": "full cube, seamless frame tiling",
+        "example": "casing, valve, port"
+      }
+    ],
+    "rules": [
+      {
+        "id": "MOD-01",
+        "level": "MUST",
+        "rule": "All element coordinates on the 1 u grid (integers 0–16). Half units only for thin trims, never smaller.",
+        "check": "coords % 0.5 == 0"
+      },
+      {
+        "id": "MOD-02",
+        "level": "MUST",
+        "rule": "Machine footprint is the full block (0–16 on X/Z) unless the block is explicitly a non-full shape; bottom at y=0.",
+        "check": null
+      },
+      {
+        "id": "MOD-03",
+        "level": "SHOULD",
+        "rule": "Element budget — simple ≤ 1, process ≤ 24, generator ≤ 48, transport core+arm ≤ 8 per state.",
+        "check": "len(elements) <= budget[class]"
+      },
+      {
+        "id": "MOD-04",
+        "level": "MUST",
+        "rule": "Element rotations limited to the vanilla set (-45, -22.5, 0, 22.5, 45) on one axis per element.",
+        "check": "rotation.angle in [-45,-22.5,0,22.5,45]"
+      },
+      {
+        "id": "MOD-05",
+        "level": "MUST",
+        "rule": "Faces flush with the block boundary declare `cullface`; hidden internal faces are deleted.",
+        "check": "faces on boundary have cullface; no face fully occluded by another element"
+      },
+      {
+        "id": "MOD-06",
+        "level": "MUST",
+        "rule": "VoxelShape (collision/selection) follows the visual model at 1 u precision; simplified to ≤ 8 boxes.",
+        "check": "boxes(shape) <= 8"
+      },
+      {
+        "id": "MOD-07",
+        "level": "MUST",
+        "rule": "UVs map 1 px = 1 u, no stretched UVs, no mirrored UVs on text or arrows.",
+        "check": "uv_size == face_size (±0)"
+      },
+      {
+        "id": "MOD-08",
+        "level": "SHOULD",
+        "rule": "Rotatable machines use blockstate `y` rotation of one north-facing model, not separate models per facing.",
+        "check": null
+      },
+      {
+        "id": "MOD-09",
+        "level": "MUST",
+        "rule": "Set `render_type` explicitly (solid | cutout | translucent). Glass/tanks use translucent on their own element only.",
+        "check": "model.render_type defined"
+      },
+      {
+        "id": "MOD-10",
+        "level": "SHOULD",
+        "rule": "Emissive elements use NeoForge per-element light data (`neoforge_data.block_light/sky_light`) and `shade: false`.",
+        "check": null
+      },
+      {
+        "id": "MOD-11",
+        "level": "MUST",
+        "rule": "Item display transforms (gui, ground, fixed, thirdperson, firstperson) are set so the front face is visible in the inventory icon.",
+        "check": "display.gui defined for custom models"
+      },
+      {
+        "id": "MOD-12",
+        "level": "SHOULD",
+        "rule": "Ambient occlusion stays on for casings, off for emissive and thin trims.",
+        "check": null
+      },
+      {
+        "id": "MOD-13",
+        "level": "MUST",
+        "rule": "Transport blocks use multipart blockstates (core + per-direction arm), arms share one model rotated.",
+        "check": null
+      }
+    ],
+    "silhouette": {
+      "rules": [
+        {
+          "id": "MOD-20",
+          "level": "SHOULD",
+          "rule": "Detail protrudes at most 2 u beyond the casing; anything larger becomes a multiblock or separate block.",
+          "check": null
+        },
+        {
+          "id": "MOD-21",
+          "level": "SHOULD",
+          "rule": "Keep the top edge mostly flat so machines stack and line up in rows.",
+          "check": null
+        }
+      ]
+    }
+  },
+  "animations": {
+    "when_to_use": {
+      "use_ber": [
+        "rotating rotors/fans",
+        "pistons",
+        "moving drill heads",
+        "fluid level in tanks",
+        "items shown in-world"
+      ],
+      "use_animated_texture_instead": [
+        "blinking LEDs",
+        "screens",
+        "flowing liquid in windows",
+        "scrolling conveyors",
+        "glowing coils"
+      ],
+      "rules": [
+        {
+          "id": "ANI-01",
+          "level": "MUST",
+          "rule": "Only use a BlockEntityRenderer if geometry must move; anything 2D is an animated texture.",
+          "check": null
+        },
+        {
+          "id": "ANI-02",
+          "level": "MUST",
+          "rule": "Animate only while the machine is active; idle state renders the static baked model.",
+          "check": "BER skips moving parts when !active"
+        }
+      ]
+    },
+    "timing": {
+      "tick_rate": 20,
+      "rules": [
+        {
+          "id": "ANI-10",
+          "level": "MUST",
+          "rule": "Motion is driven by (gameTime + partialTick), never by wall clock or per-frame increments.",
+          "check": "no System.currentTimeMillis / frame counters in renderers"
+        },
+        {
+          "id": "ANI-11",
+          "level": "MUST",
+          "rule": "Spin-up and spin-down use easing over 20–40 ticks; no instant start/stop of rotating parts.",
+          "check": null
+        },
+        {
+          "id": "ANI-12",
+          "level": "SHOULD",
+          "rule": "Speed scales with work rate (upgrades, power input), capped at a speed that still reads as rotation (no strobe/wagon-wheel).",
+          "check": "max_rotation_deg_per_tick <= 30 for symmetric rotors"
+        }
+      ],
+      "presets": {
+        "rotor_slow": {
+          "deg_per_tick": 3,
+          "ease_ticks": 40
+        },
+        "rotor_normal": {
+          "deg_per_tick": 9,
+          "ease_ticks": 30
+        },
+        "fan_fast": {
+          "deg_per_tick": 22,
+          "ease_ticks": 20
+        },
+        "piston": {
+          "period_ticks": 20,
+          "curve": "sine",
+          "travel_u": 4
+        },
+        "fluid_level": {
+          "lerp_ticks": 10,
+          "note": "interpolate between synced levels, never jump"
+        }
+      }
+    },
+    "performance": {
+      "rules": [
+        {
+          "id": "ANI-20",
+          "level": "MUST",
+          "rule": "BER culls beyond 64 blocks (getViewDistance) and draws nothing for invisible/empty parts.",
+          "check": "getViewDistance() <= 64"
+        },
+        {
+          "id": "ANI-21",
+          "level": "MUST",
+          "rule": "Moving parts are pre-baked models rendered with a pose transform; no per-frame quad building.",
+          "check": null
+        },
+        {
+          "id": "ANI-22",
+          "level": "SHOULD",
+          "rule": "Client-only state; server syncs only `active` and work rate, never animation angles.",
+          "check": null
+        },
+        {
+          "id": "ANI-23",
+          "level": "MUST",
+          "rule": "Override render bounding box for oversized animated parts so they don't pop out at screen edges.",
+          "check": null
+        }
+      ]
+    },
+    "coupling": {
+      "rules": [
+        {
+          "id": "ANI-30",
+          "level": "SHOULD",
+          "rule": "Every animated machine has a matching looped sound and emissive on-state; all three start/stop together.",
+          "check": null
+        },
+        {
+          "id": "ANI-31",
+          "level": "MAY",
+          "rule": "Particles (steam, sparks) sparingly — max 1 spawn every 10 ticks per machine, client setting to disable.",
+          "check": null
+        }
+      ]
+    }
+  },
+  "animated_textures": {
+    "mcmeta_template": {
+      "animation": {
+        "frametime": 2,
+        "interpolate": false,
+        "frames": null
+      }
+    },
+    "mekanism_reference": {
+      "measured": "active machine faces, 1.21.x @ 4255aa7",
+      "frametime": [
+        1,
+        3
+      ],
+      "strip_frames": [
+        3,
+        17
+      ],
+      "pingpong": "common — e.g. 12-frame strip played via an 18-entry frames list (0..11..1)"
+    },
+    "presets": {
+      "mek_active_face": {
+        "frames": 12,
+        "frametime": 1,
+        "interpolate": false,
+        "frames_list": "pingpong 0..11..1",
+        "note": "Mekanism-style working face"
+      },
+      "led_blink": {
+        "frames": 2,
+        "frametime": 20,
+        "interpolate": false,
+        "note": "1 s on, 1 s off; error = 10 ticks"
+      },
+      "led_pulse": {
+        "frames": 8,
+        "frametime": 3,
+        "interpolate": true
+      },
+      "screen_scroll": {
+        "frames": 16,
+        "frametime": 2,
+        "interpolate": false
+      },
+      "coil_glow": {
+        "frames": 8,
+        "frametime": 4,
+        "interpolate": true
+      },
+      "conveyor": {
+        "frames": 16,
+        "frametime": 1,
+        "interpolate": false,
+        "note": "1 px shift per frame, tile seamlessly"
+      },
+      "fluid_still": {
+        "frames": 32,
+        "frametime": 2,
+        "interpolate": false
+      },
+      "fluid_flow": {
+        "frames": 32,
+        "frametime": 1,
+        "interpolate": false,
+        "size": "32x32 per frame (vanilla convention)"
+      }
+    },
+    "rules": [
+      {
+        "id": "ATX-01",
+        "level": "MUST",
+        "rule": "Vertical strip, frame width = texture width, height = width × frame_count.",
+        "check": "height % width == 0"
+      },
+      {
+        "id": "ATX-02",
+        "level": "MUST",
+        "rule": "Loops are seamless: last frame → first frame is a valid next step.",
+        "check": "delta(frame[n-1], frame[0]) ≈ mean(delta(frame[i], frame[i+1]))"
+      },
+      {
+        "id": "ATX-03",
+        "level": "MUST",
+        "rule": "No full-face flashing faster than 3 Hz (frametime×frames for one cycle ≥ 7 ticks) for large bright areas.",
+        "rationale": "Photosensitivity and visual noise in large machine rooms.",
+        "check": "if changed_area > 25% then cycle_ticks >= 7"
+      },
+      {
+        "id": "ATX-04",
+        "level": "SHOULD",
+        "rule": "Animate only the function zone; frame and casing pixels are identical in every frame.",
+        "check": "static_mask(casing) constant across frames"
+      },
+      {
+        "id": "ATX-05",
+        "level": "SHOULD",
+        "rule": "Max 32 frames for block textures, 16 for overlays/LEDs (atlas size and memory).",
+        "check": "frames <= 32"
+      },
+      {
+        "id": "ATX-06",
+        "level": "MUST",
+        "rule": "Use `interpolate: true` only for glow/pulse; never for pixel-art motion (it produces blurred mixed colors).",
+        "check": null
+      },
+      {
+        "id": "ATX-07",
+        "level": "SHOULD",
+        "rule": "Offset identical animations visually with hold frames per variant to avoid perfectly synchronized walls of blinking blocks, or accept sync deliberately for \"network\" effects.",
+        "check": null
+      },
+      {
+        "id": "ATX-09",
+        "level": "SHOULD",
+        "rule": "For back-and-forth motion use a ping-pong `frames` list instead of duplicating frames in the strip.",
+        "check": null
+      },
+      {
+        "id": "ATX-08",
+        "level": "MUST",
+        "rule": "Emissive animated layers are separate textures so the base casing stays shaded normally.",
+        "check": null
+      }
+    ]
+  },
+  "gui": {
+    "base": {
+      "width_px": 176,
+      "height_px": 166,
+      "player_inventory": "vanilla layout, y=84 (MekanismContainer.BASE_Y_OFFSET), label at height-94",
+      "background": "mekanism:gui/base.png 256x256, 4 px nine-slice; edges/centre TILED 1:1, never stretched (GuiUtils.blitNineSlicedSized)",
+      "text": {
+        "title": "#404040 centred, y=6",
+        "heading": "#202020",
+        "subheading": "#787878",
+        "inner_screen": "#3CFE9A"
+      }
+    },
+    "components": {
+      "side_tabs": {
+        "holder": "holder_left/right.png 26x9 nine-slice, tinted per tab",
+        "button": "button.png 200x60 (rows: disabled/normal/hover), 18 px inner at border 4",
+        "left": "side config (-26,6), transporter (-26,34), energy info (-26,137, 26x26 tabs/energy_info_<unit>.png)",
+        "right": "upgrades, redstone, security"
+      },
+      "energy_bar": {
+        "position": "right, (164,16)",
+        "size_px": [
+          6,
+          54
+        ],
+        "fill": "bar/vertical_power.png 4x52 in bar/base.png 5x5 frame (2 px slices)"
+      },
+      "gauges": {
+        "fluid": "tinted by fluid",
+        "chemical": "tinted by chemical",
+        "frame": "gauge/*.png"
+      },
+      "progress": {
+        "style": "ProgressType (bar 25x9 at (86,38) for electric machines, right 32x8, ...)",
+        "texture": "rows: empty / fill / warning"
+      },
+      "slots": {
+        "size_px": 18,
+        "layout": "electric machine: input (64,17), energy (64,53) + up_arrow (68,38), output (116,35)",
+        "frames": "slot/input (red), output (blue), power (+overlay_power), normal"
+      },
+      "upgrade_window": {
+        "tab": "right (176,6), holder_right tinted white, gui/upgrade.png",
+        "window": "198 x (76 + max(18, 12*rows)) at ((w-198)/2, 15)",
+        "parts": "installed list (6,18) 108x50 on element_holder.png with upgrade_selection.png rows (12 px, tinted by upgrade color), info inner_screen (114,18) 59x50 at 0.6 text scale, digital Uninstall (115,54) 56x12, Supported strip (6,68), install slot (175,18) + installing.png (176,37), removed slot (175,72)",
+        "rule": "install takes 20 ticks; effects M^(n/8) with M = 10 (speed: ticks x M^-s, energy/t x M^(2s-e); energy: capacity x M^e)"
+      },
+      "side_config": {
+        "window": "156x135 at ((w-156)/2, 15), shadow.png 75% alpha 3 px out, close button (6,6)",
+        "faces": "22x22 color buttons, BasicColorButton tint (S-0.1, V+0.1), neighbour block item inside",
+        "positions": "top (67,46), left (44,69), front (67,69), right (90,69), back (44,92), bottom (67,92)"
+      }
+    },
+    "rules": [
+      {
+        "id": "GUI-01",
+        "level": "MUST",
+        "rule": "Slot outline colors in side-config view use exactly the semantic port colors.",
+        "check": null
+      },
+      {
+        "id": "GUI-02",
+        "level": "MUST",
+        "rule": "Every gauge/bar has a tooltip with exact value and unit (FE, mB, ticks).",
+        "check": null
+      },
+      {
+        "id": "GUI-03",
+        "level": "SHOULD",
+        "rule": "Tabs and gauges are shared components reused across all machine screens.",
+        "check": null
+      },
+      {
+        "id": "GUI-04",
+        "level": "MUST",
+        "rule": "GUI scales cleanly at all vanilla GUI scales; no sub-pixel offsets, no text overlapping widgets at scale 4 with long translations (DE strings are ~30% longer).",
+        "check": null
+      }
+    ]
+  },
+  "blockbench": {
+    "project": {
+      "format": "Java Block/Item",
+      "texture_size": [
+        16,
+        16
+      ],
+      "uv_mode": "per_face",
+      "grid_snap_u": 1,
+      "ambient_occlusion": true
+    },
+    "outliner_naming": {
+      "pattern": "<part>[_<index>]",
+      "rules": [
+        {
+          "id": "BB-01",
+          "level": "MUST",
+          "rule": "Every element and group has a meaningful snake_case name; no \"cube\", \"cube2\", \"group\".",
+          "check": "regex ^[a-z][a-z0-9_]*$ and not ^(cube|group)\\d*$"
+        },
+        {
+          "id": "BB-02",
+          "level": "SHOULD",
+          "rule": "Group by function (casing, function_zone, ports, emissive, moving_<part>).",
+          "check": null
+        }
+      ]
+    },
+    "moving_parts": {
+      "rules": [
+        {
+          "id": "BB-10",
+          "level": "MUST",
+          "rule": "The Java Block/Item format has no runtime keyframe animation. Each part a BER moves (rotor, piston, drill) is exported as its own model file, e.g. `block/<machine>_rotor.json`.",
+          "check": "for each BER-animated part: models/block/<machine>_<part>.json exists"
+        },
+        {
+          "id": "BB-11",
+          "level": "MUST",
+          "rule": "Moving-part models are built around their real pivot. Note the pivot (in u) in the outliner name or a sidecar so the renderer rotates around the same point.",
+          "check": null
+        },
+        {
+          "id": "BB-12",
+          "level": "MUST",
+          "rule": "The static base model must not contain the moving part (no double-render when active).",
+          "check": null
+        },
+        {
+          "id": "BB-13",
+          "level": "MAY",
+          "rule": "Blockbench animations may be used only to preview motion; they are not exported for Java block models.",
+          "check": null
+        }
+      ]
+    },
+    "textures": {
+      "rules": [
+        {
+          "id": "BB-20",
+          "level": "MUST",
+          "rule": "Paint with the steel ramp + tier/semantic colors loaded as the Blockbench palette, or start from an imported Mekanism face; casings stay neutral (COL-01).",
+          "check": "lint_textures.py (COL-01 neutral share)"
+        },
+        {
+          "id": "BB-21",
+          "level": "MUST",
+          "rule": "After saving an animated texture, confirm the `.png.mcmeta` exists and matches the preset you meant to use.",
+          "check": "lint_textures.py (ATX checks)"
+        },
+        {
+          "id": "BB-22",
+          "level": "SHOULD",
+          "rule": "Overlays (ports, LEDs, tier masks) are separate textures, not layers merged into the casing.",
+          "check": null
+        }
+      ]
+    },
+    "export": {
+      "models": "src/main/resources/assets/<modid>/models/block/",
+      "item_models": "src/main/resources/assets/<modid>/models/item/",
+      "textures": "src/main/resources/assets/<modid>/textures/block/",
+      "keep_source": "art/blockbench/<name>.bbmodel",
+      "rules": [
+        {
+          "id": "BB-30",
+          "level": "MUST",
+          "rule": "Texture references in exported JSON use `<modid>:block/<name>`, never absolute paths or `#missing`.",
+          "check": "all textures values match ^[a-z0-9_]+:(block|item)/[a-z0-9_/]+$ or start with #"
+        },
+        {
+          "id": "BB-31",
+          "level": "MUST",
+          "rule": "The .bbmodel source is saved next to every export so the model can be edited later.",
+          "check": null
+        }
+      ]
+    },
+    "agent_rules": [
+      {
+        "id": "BB-40",
+        "level": "MUST",
+        "rule": "Agents read the current project state before editing and never overwrite an unsaved project without asking.",
+        "check": null
+      },
+      {
+        "id": "BB-41",
+        "level": "MUST",
+        "rule": "Agents prefer dedicated MCP tools over script evaluation (e.g. `risky_eval`); script evaluation needs the user's approval.",
+        "check": null
+      },
+      {
+        "id": "BB-42",
+        "level": "SHOULD",
+        "rule": "Agents review a screenshot/preview after each major step (casing, details, textures) when the MCP offers one.",
+        "check": null
+      }
+    ]
+  },
+  "dos": [
+    {
+      "id": "DO-01",
+      "text": "Start from Mekanism's base/ casing (via import_mekanism.py) or one own casing template; derive every machine from it."
+    },
+    {
+      "id": "DO-02",
+      "text": "Generate tier and material variants via tint masks or scripts, not by hand."
+    },
+    {
+      "id": "DO-03",
+      "text": "Test every texture in-game in a dark room, in daylight and next to vanilla blocks."
+    },
+    {
+      "id": "DO-04",
+      "text": "Run the grayscale test: is the block still recognizable without color?"
+    },
+    {
+      "id": "DO-05",
+      "text": "Keep a shared .ase/.aseprite palette file; lint textures against it in CI."
+    },
+    {
+      "id": "DO-06",
+      "text": "Put emissive details in separate overlay layers/elements."
+    },
+    {
+      "id": "DO-07",
+      "text": "Reuse arms/cores/ports as shared models; only identity faces differ."
+    },
+    {
+      "id": "DO-08",
+      "text": "Animate with partialTick interpolation and easing."
+    },
+    {
+      "id": "DO-09",
+      "text": "Use datagen for blockstates, models and item models to keep naming consistent."
+    },
+    {
+      "id": "DO-10",
+      "text": "Check a 3x3 wall of the block for tiling seams and visual noise."
+    },
+    {
+      "id": "DO-11",
+      "text": "Preview with common shader packs/resource packs off and on (Iris/Oculus emissive behavior)."
+    }
+  ],
+  "donts": [
+    {
+      "id": "DONT-01",
+      "text": "Don't recolor the whole machine per tier — accent only.",
+      "ref": "COL-10"
+    },
+    {
+      "id": "DONT-02",
+      "text": "Don't use pure black/white in casings or saturated casing bodies.",
+      "ref": [
+        "COL-30",
+        "COL-01"
+      ]
+    },
+    {
+      "id": "DONT-03",
+      "text": "Don't use 32x+ textures on plain cube faces or mix texel densities on one model.",
+      "ref": [
+        "TEX-01",
+        "TEX-03"
+      ]
+    },
+    {
+      "id": "DONT-04",
+      "text": "Don't bake face-direction shading into textures.",
+      "ref": "TEX-10"
+    },
+    {
+      "id": "DONT-05",
+      "text": "Don't use a BER for anything a .mcmeta animation can do.",
+      "ref": "ANI-01"
+    },
+    {
+      "id": "DONT-06",
+      "text": "Don't animate idle machines.",
+      "ref": "ANI-02"
+    },
+    {
+      "id": "DONT-07",
+      "text": "Don't use interpolate on pixel-motion animations.",
+      "ref": "ATX-06"
+    },
+    {
+      "id": "DONT-08",
+      "text": "Don't flash large bright areas faster than ~3 Hz.",
+      "ref": "ATX-03"
+    },
+    {
+      "id": "DONT-09",
+      "text": "Don't reuse semantic colors (energy green, input red, output blue) as decoration.",
+      "ref": "COL-20"
+    },
+    {
+      "id": "DONT-10",
+      "text": "Don't add bolts, pipes or vents with no gameplay meaning.",
+      "ref": "P3"
+    },
+    {
+      "id": "DONT-11",
+      "text": "Don't use sub-0.5 u geometry or arbitrary rotation angles.",
+      "ref": [
+        "MOD-01",
+        "MOD-04"
+      ]
+    },
+    {
+      "id": "DONT-12",
+      "text": "Don't leave hidden internal faces or missing cullfaces.",
+      "ref": "MOD-05"
+    },
+    {
+      "id": "DONT-13",
+      "text": "Don't make emissive overlays full brightness 15 unless it is a light source.",
+      "ref": "TEX-52"
+    },
+    {
+      "id": "DONT-14",
+      "text": "Don't ship Mekanism-derived files without the MIT notice and a provenance entry.",
+      "ref": [
+        "LEGAL-01",
+        "LEGAL-02"
+      ]
+    },
+    {
+      "id": "DONT-16",
+      "text": "Don't put imported textures under assets/mekanism/.",
+      "ref": "LEGAL-03"
+    },
+    {
+      "id": "DONT-17",
+      "text": "Don't reuse assets from other mods without checking their own license.",
+      "ref": "LEGAL-06"
+    },
+    {
+      "id": "DONT-15",
+      "text": "Don't sync animation state from server every tick.",
+      "ref": "ANI-22"
+    }
+  ],
+  "checklist": {
+    "texture": [
+      "Size valid (TEX-01), alpha valid (TEX-02)",
+      "Casing neutral >= 85% (COL-01)",
+      "No #000000/#FFFFFF outside tint bases (COL-30), <= 96 colors (COL-31)",
+      "Imported? provenance entry + license shipped (LEGAL-01, LEGAL-02)",
+      "Shared frame matches casing template (TEX-20)",
+      "Grayscale test passed (DO-04)"
+    ],
+    "model": [
+      "Grid-aligned (MOD-01), rotation allowed (MOD-04)",
+      "Cullfaces set, hidden faces removed (MOD-05)",
+      "Element budget respected (MOD-03)",
+      "render_type set (MOD-09), gui transform set (MOD-11)",
+      "VoxelShape matches (MOD-06)"
+    ],
+    "animation": [
+      "BER justified (ANI-01), idle static (ANI-02)",
+      "partialTick + easing (ANI-10, ANI-11)",
+      "View distance cull (ANI-20)"
+    ],
+    "blockbench": [
+      "Format Java Block/Item, 16x16, per-face UV (blockbench.project)",
+      "Outliner named (BB-01), moving parts split out (BB-10, BB-12)",
+      "Texture refs namespaced (BB-30), .bbmodel saved (BB-31)"
+    ],
+    "animated_texture": [
+      "Strip valid (ATX-01), loop seamless (ATX-02)",
+      "Flash rate safe (ATX-03), frame cap (ATX-05)",
+      "interpolate only for glow (ATX-06)"
+    ]
+  }
+}

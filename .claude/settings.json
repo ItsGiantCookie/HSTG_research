@@ -1,0 +1,6 @@
+{
+  "permissions": {
+    "ask": ["mcp__blockbench__risky_eval"]
+  },
+  "enabledMcpjsonServers": ["blockbench"]
+}
