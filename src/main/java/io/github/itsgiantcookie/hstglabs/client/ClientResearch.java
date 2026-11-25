@@ -3,6 +3,7 @@ package io.github.itsgiantcookie.hstglabs.client;
 import io.github.itsgiantcookie.hstglabs.packet.LabStatusPayload;
 import io.github.itsgiantcookie.hstglabs.packet.ResearchViews.QueueView;
 import io.github.itsgiantcookie.hstglabs.packet.ResearchViews.TechView;
+import io.github.itsgiantcookie.hstglabs.packet.ResearchViews.TierView;
 import io.github.itsgiantcookie.hstglabs.packet.TechSnapshotPayload;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +25,7 @@ public final class ClientResearch {
     public static void accept(TechSnapshotPayload payload) {
         technologies = payload.technologies();
         queue = payload.queue();
+        tiers = payload.tiers();
         revision++;
     }
 
@@ -52,6 +54,12 @@ public final class ClientResearch {
     }
 
     private static volatile LabStatusPayload lab;
+    private static volatile List<TierView> tiers = List.of();
+
+    /** The tier label for {@code level}, "Tier N" when the server has none (D28). */
+    public static TierView tier(int level) {
+        return tiers.stream().filter(t -> t.level() == level).findFirst().orElseGet(() -> TierView.fallback(level));
+    }
 
     public static void acceptLab(LabStatusPayload payload) {
         lab = payload;

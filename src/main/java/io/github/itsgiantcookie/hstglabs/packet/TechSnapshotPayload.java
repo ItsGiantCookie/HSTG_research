@@ -9,6 +9,8 @@ import io.github.itsgiantcookie.hstglabs.packet.ResearchViews.ProgressView;
 import io.github.itsgiantcookie.hstglabs.packet.ResearchViews.QueueView;
 import io.github.itsgiantcookie.hstglabs.packet.ResearchViews.TechState;
 import io.github.itsgiantcookie.hstglabs.packet.ResearchViews.TechView;
+import io.github.itsgiantcookie.hstglabs.packet.ResearchViews.TierView;
+import io.github.itsgiantcookie.hstglabs.lab.LabTiers;
 import io.github.itsgiantcookie.hstglabs.research.ResearchManager;
 import io.github.itsgiantcookie.hstglabs.research.StageBridge;
 import io.github.itsgiantcookie.hstglabs.research.TechReloader;
@@ -42,17 +44,19 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  * (name, icon, cost, prerequisites, state, unlock preview) and their owner's queue. Sent on login,
  * after definitions or stage changes, and after queue changes.
  */
-public record TechSnapshotPayload(List<TechView> technologies, QueueView queue) implements CustomPacketPayload {
+public record TechSnapshotPayload(List<TechView> technologies, QueueView queue, List<TierView> tiers) implements CustomPacketPayload {
 
     public static final Type<TechSnapshotPayload> TYPE = new Type<>(HstgLabs.rl("tech_snapshot"));
     public static final StreamCodec<RegistryFriendlyByteBuf, TechSnapshotPayload> STREAM_CODEC = StreamCodec.composite(
           TechView.STREAM_CODEC.apply(ByteBufCodecs.list()), TechSnapshotPayload::technologies,
           QueueView.STREAM_CODEC, TechSnapshotPayload::queue,
+          TierView.STREAM_CODEC.apply(ByteBufCodecs.list()), TechSnapshotPayload::tiers,
           TechSnapshotPayload::new);
     private static final int PREVIEW = 8;
 
     public TechSnapshotPayload {
         technologies = List.copyOf(technologies);
+        tiers = List.copyOf(tiers);
     }
 
     @Override
@@ -105,7 +109,9 @@ public record TechSnapshotPayload(List<TechView> technologies, QueueView queue) 
         List<ProgressView> progress = book.progressEntries().entrySet().stream()
               .map(e -> new ProgressView(e.getKey(), e.getValue().done(), e.getValue().units(), e.getValue().inFlight())).toList();
         QueueView queue = new QueueView(book.queue().entries(), book.queue().max(), progress, List.copyOf(book.blockedTechnologies()));
-        return new TechSnapshotPayload(views, queue);
+        List<TierView> tiers = LabTiers.current().all().stream()
+              .map(t -> new TierView(t.level(), t.name(), t.color(), item(t.icon()))).toList();
+        return new TechSnapshotPayload(views, queue, tiers);
     }
 
     private static ItemStack item(String id) {

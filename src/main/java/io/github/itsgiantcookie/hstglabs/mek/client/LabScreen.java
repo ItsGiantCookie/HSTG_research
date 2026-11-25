@@ -207,7 +207,7 @@ public class LabScreen extends GuiMekanism<BasicLabMenu> {
             return lines;
         }
         LabStatusPayload s = status.get();
-        lines.add(Component.translatable("screen.hstg_labs.lab.tier", s.tier(), String.format("%.2f", s.speed())));
+        lines.add(Component.translatable("screen.hstg_labs.lab.tier", ClientResearch.tier(s.tier()).label(), String.format(java.util.Locale.ROOT, "%.2f", s.speed())));
         if (!s.ownedByViewer()) {
             lines.add(Component.translatable("screen.hstg_labs.lab.other_owner").withStyle(ChatFormatting.YELLOW));
         }
@@ -232,7 +232,7 @@ public class LabScreen extends GuiMekanism<BasicLabMenu> {
     private static void details(TechView t, List<Component> lines) {
         lines.add(t.name());
         lines.add(Component.translatable("screen.hstg_labs.state." + t.state().name().toLowerCase(java.util.Locale.ROOT)));
-        lines.add(Component.translatable("screen.hstg_labs.lab.cost", t.units(), time(t.unitTime()), t.minTier()));
+        lines.add(Component.translatable("screen.hstg_labs.lab.cost", t.units(), time(t.unitTime()), ClientResearch.tier(Math.max(1, t.minTier())).label()));
         for (IngredientView i : t.ingredients()) {
             lines.add(Component.literal(i.amount() + "× ").append(i.name()));
         }

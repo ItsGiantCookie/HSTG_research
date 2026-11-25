@@ -33,6 +33,36 @@ public final class ResearchViews {
     }
 
     /** One ingredient line as the screen shows it. */
+    /** A lab tier label (D28): {@code name} is a translation key or text, {@code color} 0xRRGGBB. */
+    public record TierView(int level, String name, int color, ItemStack icon) {
+
+        public static final StreamCodec<RegistryFriendlyByteBuf, TierView> STREAM_CODEC = StreamCodec.composite(
+              ByteBufCodecs.VAR_INT, TierView::level,
+              ByteBufCodecs.STRING_UTF8, TierView::name,
+              ByteBufCodecs.INT, TierView::color,
+              ItemStack.OPTIONAL_STREAM_CODEC, TierView::icon,
+              TierView::new);
+
+        /** Shown name: translated when it is a key, else the text itself. */
+        public Component label() {
+            return Component.translatableWithFallback(name, name).withColor(color);
+        }
+
+        public static TierView fallback(int level) {
+            return new TierView(level, "Tier " + level, 0xA0A0A0, ItemStack.EMPTY);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof TierView t && t.level == level && t.name.equals(name) && t.color == color && ItemStack.matches(t.icon, icon);
+        }
+
+        @Override
+        public int hashCode() {
+            return java.util.Objects.hash(level, name, color);
+        }
+    }
+
     public record IngredientView(ItemStack icon, Component name, int amount) {
 
         static final StreamCodec<RegistryFriendlyByteBuf, IngredientView> STREAM_CODEC = StreamCodec.composite(

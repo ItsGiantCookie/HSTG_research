@@ -52,6 +52,7 @@ public final class HstgLabs {
         // WP-09: lab types as data (D17), and validation sees them
         LabTypes.register(() -> TechReloader.configDir().resolve("lab_types"), ApiRegistries.LAB_TYPE_SOURCES::values);
         TechReloader.setLabTypes(LabTypes::models);
+        io.github.itsgiantcookie.hstglabs.lab.LabTiers.register(); // D28 tier labels
         // WP-08: owners, the research manager, and History Stages through the hs bridge only
         boolean ftbTeams = ModList.get().isLoaded(FtbTeamsCompat.MOD_ID);
         BuiltInOwners.register(modBus, !ftbTeams);

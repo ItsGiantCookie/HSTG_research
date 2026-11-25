@@ -64,12 +64,12 @@
   "screen.hstg_labs.lab.add": "Add to queue",
   "screen.hstg_labs.lab.queue": "Queue %s/%s",
   "screen.hstg_labs.lab.available": "Technologies",
-  "screen.hstg_labs.lab.tier": "Tier %s, speed ×%s",
+  "screen.hstg_labs.lab.tier": "%s lab, speed ×%s",
   "screen.hstg_labs.lab.other_owner": "Researches for another owner",
   "screen.hstg_labs.lab.units": "Units %s/%s",
   "screen.hstg_labs.lab.eta": "Done in %s",
   "screen.hstg_labs.lab.idle": "Idle",
-  "screen.hstg_labs.lab.cost": "%s units × %s, tier %s",
+  "screen.hstg_labs.lab.cost": "%s units × %s, %s lab",
   "screen.hstg_labs.lab.needs": "Needs:",
   "screen.hstg_labs.state.researched": "Researched",
   "screen.hstg_labs.state.available": "Available",
@@ -84,5 +84,9 @@
   "idle.hstg_labs.lab_tier": "Needs a tier %s lab",
   "idle.hstg_labs.lab_requirements": "Missing: %s",
   "idle.hstg_labs.missing_ingredients": "Missing: %s",
-  "idle.hstg_labs.unknown": "Idle"
+  "idle.hstg_labs.unknown": "Idle",
+  "tier.hstg_labs.basic": "Basic",
+  "tier.hstg_labs.advanced": "Advanced",
+  "tier.hstg_labs.elite": "Elite",
+  "tier.hstg_labs.ultimate": "Ultimate"
 }

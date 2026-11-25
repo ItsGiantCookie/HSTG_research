@@ -8,6 +8,7 @@ import io.github.itsgiantcookie.hstglabs.packet.ResearchViews.ProgressView;
 import io.github.itsgiantcookie.hstglabs.packet.ResearchViews.QueueView;
 import io.github.itsgiantcookie.hstglabs.packet.ResearchViews.TechState;
 import io.github.itsgiantcookie.hstglabs.packet.ResearchViews.TechView;
+import io.github.itsgiantcookie.hstglabs.packet.ResearchViews.TierView;
 import io.github.itsgiantcookie.hstglabs.packet.TechSnapshotPayload;
 import io.github.itsgiantcookie.hstglabs.research.LabsConfig;
 import io.github.itsgiantcookie.hstglabs.research.ResearchManager;
@@ -84,7 +85,8 @@ public final class PacketTests {
               List.of(new IngredientView(new ItemStack(Items.PAPER), Component.literal("Paper"), 3)), TechState.AVAILABLE,
               List.of(HstgLabs.rl("before")), List.of(new ItemStack(Items.LECTERN)));
         QueueView queue = new QueueView(List.of(HstgLabs.rl("t")), 7, List.of(new ProgressView(HstgLabs.rl("t"), 4, 120, 1)), List.of(HstgLabs.rl("b")));
-        TechSnapshotPayload snapshot = new TechSnapshotPayload(List.of(view), queue);
+        List<TierView> tiers = List.of(new TierView(1, "tier.hstg_labs.basic", 0x5FFFB8, new ItemStack(Items.REDSTONE)));
+        TechSnapshotPayload snapshot = new TechSnapshotPayload(List.of(view), queue, tiers);
 
         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), registries);
         TechSnapshotPayload.STREAM_CODEC.encode(buf, snapshot);
@@ -95,6 +97,7 @@ public final class PacketTests {
         helper.assertTrue(v.ingredients().get(0).amount() == 3 && v.ingredients().get(0).icon().is(Items.PAPER), "ingredients");
         helper.assertTrue(v.prerequisites().equals(view.prerequisites()) && v.preview().get(0).is(Items.LECTERN), "prerequisites and preview");
         helper.assertTrue(back.queue().equals(queue), "queue: " + back.queue());
+        helper.assertTrue(back.tiers().equals(tiers), "tiers: " + back.tiers());
         helper.assertTrue(buf.readableBytes() == 0, "snapshot left bytes behind");
 
         QueueEditPayload edit = new QueueEditPayload(QueueEditPayload.Op.MOVE, HstgLabs.rl("t"), 3);
@@ -123,6 +126,9 @@ public final class PacketTests {
         helper.assertTrue(snapshot.technologies().stream().anyMatch(t -> t.id().equals(locked) && t.state() == TechState.PREREQUISITES_MISSING),
               "snapshot shows the locked state");
         helper.assertTrue(snapshot.queue().entries().contains(open), "snapshot shows the queue");
+        helper.assertTrue(snapshot.tiers().stream().map(TierView::level).toList().equals(List.of(1, 2, 3, 4))
+              && snapshot.tiers().get(0).name().equals("tier.hstg_labs.basic") && snapshot.tiers().get(0).color() == 0x5FFFB8
+              && !snapshot.tiers().get(0).icon().isEmpty(), "D28 default tiers: " + snapshot.tiers());
         remove(server, "gametest_queue_open", "gametest_queue_locked");
         helper.succeed();
     }
@@ -144,6 +150,21 @@ public final class PacketTests {
             LabsConfig.QUEUE_PERMISSION.set(before);
             remove(server, "gametest_queue_perm");
         }
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty")
+    public static void labTierFilesParseAndReportBrokenOnes(GameTestHelper helper) {
+        java.util.Map<ResourceLocation, com.google.gson.JsonElement> files = new java.util.LinkedHashMap<>();
+        files.put(ResourceLocation.fromNamespaceAndPath("apack", "1"), com.google.gson.JsonParser.parseString("{ \"name\": \"Primitive\", \"color\": \"#102030\" }"));
+        files.put(HstgLabs.rl("1"), com.google.gson.JsonParser.parseString("{ \"name\": \"Basic\", \"color\": 255 }"));
+        files.put(HstgLabs.rl("steam"), com.google.gson.JsonParser.parseString("{ \"name\": \"x\" }"));
+        files.put(HstgLabs.rl("5"), com.google.gson.JsonParser.parseString("{ \"color\": 1 }"));
+        List<io.github.itsgiantcookie.hstglabs.core.tech.Problem> problems = new java.util.ArrayList<>();
+        var table = io.github.itsgiantcookie.hstglabs.lab.LabTiers.load(files, problems);
+        helper.assertTrue(table.tier(1).name().equals("Primitive") && table.tier(1).color() == 0x102030, "a pack's file replaces ours: " + table.tier(1));
+        helper.assertTrue(table.levels().equals(List.of(1)), "levels " + table.levels());
+        helper.assertTrue(problems.size() == 2 && table.problems().size() == 1, "problems " + problems + " " + table.problems());
         helper.succeed();
     }
 }
