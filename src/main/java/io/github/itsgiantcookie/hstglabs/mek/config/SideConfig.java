@@ -29,6 +29,18 @@ public final class SideConfig {
         config.get(TransmissionKind.DATA).put(RelativeSide.RIGHT, PortType.OUTPUT);
     }
 
+    /**
+     * The basic lab's defaults: every face takes items and energy, so hoppers and cables work from any
+     * side until the player configures it; no data faces (D13).
+     */
+    public static SideConfig allInput() {
+        SideConfig c = new SideConfig();
+        for (TransmissionKind kind : TransmissionKind.values()) {
+            c.config.get(kind).replaceAll((side, type) -> kind == TransmissionKind.DATA ? PortType.NONE : PortType.INPUT);
+        }
+        return c;
+    }
+
     /** Items eject only when toggled on; data is always pushed out; energy never ejects. */
     public boolean isEjecting(TransmissionKind kind) {
         return kind == TransmissionKind.DATA || ejecting.contains(kind);

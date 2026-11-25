@@ -28,7 +28,9 @@ public class BasicLabMenu extends AbstractContainerMenu {
     public static final int WIDTH = 256, HEIGHT = 240;
     /** Item position of the first lab slot; slots run in rows of {@link #ROW}. */
     public static final int ITEMS_X = 25, ITEMS_Y = 19, ROW = 6, MAX_ITEM_SLOTS = 12;
-    public static final int UPGRADES_X = 25, UPGRADES_Y = 59;
+    /** The upgrade window (fixed, not draggable) and its two slots, speed then energy, as item positions. */
+    public static final int UPGRADE_WINDOW_X = 38, UPGRADE_WINDOW_Y = 15, UPGRADE_WINDOW_W = 180, UPGRADE_WINDOW_H = 72;
+    public static final int UPGRADES_X = UPGRADE_WINDOW_X + 9, UPGRADES_Y = UPGRADE_WINDOW_Y + 23, UPGRADES_STEP = 22;
     /** Below the energy bar. */
     public static final int ENERGY_X = 6, ENERGY_Y = 73;
     /** Upgrade slots and the energy slot, after the lab's item slots. */
@@ -65,7 +67,12 @@ public class BasicLabMenu extends AbstractContainerMenu {
             addSlot(new SlotItemHandler(items, i, ITEMS_X + (i % ROW) * 18, ITEMS_Y + (i / ROW) * 18));
         }
         for (int i = 0; i < 2; i++) {
-            addSlot(new SlotItemHandler(upgrades, i, UPGRADES_X + i * 18, UPGRADES_Y));
+            addSlot(new SlotItemHandler(upgrades, i, UPGRADES_X, UPGRADES_Y + i * UPGRADES_STEP) {
+                @Override
+                public boolean isActive() {
+                    return BasicLabMenu.this.lab != null || upgradesShown;
+                }
+            });
         }
         addSlot(new SlotItemHandler(energyItem, 0, ENERGY_X, ENERGY_Y));
         for (int row = 0; row < 3; row++) {
@@ -81,6 +88,17 @@ public class BasicLabMenu extends AbstractContainerMenu {
     public static void writeOpenData(BasicLabBlockEntity lab, RegistryFriendlyByteBuf buf) {
         buf.writeBlockPos(lab.getBlockPos());
         buf.writeVarInt(lab.items().getSlots());
+    }
+
+    /** Client only: the upgrade window is open, so its slots take clicks and draw. */
+    private boolean upgradesShown;
+
+    public void setUpgradesShown(boolean shown) {
+        upgradesShown = shown;
+    }
+
+    public boolean isUpgradeSlot(int index) {
+        return index == itemSlots || index == itemSlots + 1;
     }
 
     public BlockPos pos() {

@@ -182,3 +182,8 @@ texture and shows a raw name.
   it is used. The WP-05a spike rows show the gauge, bar and tab constructors.
 - **Still to verify in WP-09:** a `GuiMekanism` subclass over our own menu. It was only checked by
   signature in the spike. The first GameTest-free check is the client checklist.
+
+## Amendment (D33, 2026-11-25)
+`mek/client` may also use `mekanism.common.inventory.container.SelectedWindowData` (and its nested
+`WindowType`), the one common type Mekanism's `GuiWindow` and `GuiWindowCreatorTab` need. No other
+common type is allowed. docs/decisions/D33-lab-screen-side-windows.md.

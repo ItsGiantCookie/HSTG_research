@@ -65,6 +65,7 @@ public final class HstgLabs {
         modBus.addListener(TechSnapshotPayload::register);
         modBus.addListener(QueueEditPayload::register);
         modBus.addListener(io.github.itsgiantcookie.hstglabs.packet.LabStatusPayload::register);
+        modBus.addListener(io.github.itsgiantcookie.hstglabs.packet.SideConfigPayload::register);
         SnapshotSync.register();
         if (DemoAddon.enabled()) {
             DemoAddon.register(modBus);

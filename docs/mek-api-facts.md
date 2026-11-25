@@ -120,3 +120,21 @@ Paths under `ref/Mekanism/src/main/java/mekanism/client/`.
 | Energy tab | `GuiEnergyTab(IGuiWrapper, IInfoHandler)` at (-26, 137); `GuiTexturedElement.IInfoHandler { List<Component> getInfo() }` | `gui/element/tab/GuiEnergyTab.java:39`, `gui/element/GuiTexturedElement.java:21` |
 | Windows need common types | `GuiWindow(IGuiWrapper, x, y, w, h, WindowType)` and `GuiWindowCreatorTab.createWindow(SelectedWindowData)`: both types are in `mekanism.common.inventory.container.SelectedWindowData` (D33) | `gui/element/window/GuiWindow.java:69`, `gui/element/tab/window/GuiWindowCreatorTab.java:59`, `common/inventory/container/SelectedWindowData.java:25, 114` |
 | Not used | `GuiDynamicHorizontalRateBar`'s colour parameter is `mekanism.common.lib.Color.ColorFunction` (common, internal) | `gui/element/bar/GuiDynamicHorizontalRateBar.java:6` |
+
+## WP-10 side windows (D33)
+Paths under `ref/Mekanism/src/main/java/mekanism/` unless noted.
+
+| Need | Fact | Where |
+| --- | --- | --- |
+| Window | `GuiWindow(IGuiWrapper, x, y, w, h, SelectedWindowData)`; adds a close button; `UNSPECIFIED` has no save name (no stored position) and cannot pin | `client/gui/element/window/GuiWindow.java:73, 85-89`, `common/inventory/container/SelectedWindowData.java:25, 62-64` |
+| Window clicks | `interactionStrategy` (`NONE` / `CONTAINER` / `ALL`): with `ALL` a click no child takes falls through to the screen; dragging starts in the top 18 px, `onDrag` moves it | `client/gui/element/window/GuiWindow.java:40, 114-139, 141` |
+| Close | `close()` removes the window and calls the tab's close listener | `client/gui/element/window/GuiWindow.java:224` |
+| Window tab | `GuiWindowCreatorTab(overlay, gui, data, x, y, height 26, inner 18, left, Supplier<self>)`, `createWindow(SelectedWindowData)`, `getNextWindowData()`; disables itself while its window is open | `client/gui/element/tab/window/GuiWindowCreatorTab.java:18, 59, 61` |
+| Mekanism's tab spots | side config `(-26, 6)`, `configuration.png`; upgrades `(xSize, 6)`, `upgrade.png`; side window `((w - 156) / 2, 15)` | `client/gui/element/tab/window/GuiSideConfigurationTab.java:22, 32`, `GuiUpgradeWindowTab.java:22` |
+| Tab colours | `SpecialColors.TAB_CONFIGURATION`, `TAB_UPGRADE`; `MekanismRenderer.color(GuiGraphics, ColorRegistryObject)` | `client/SpecialColors.java:23-24`, `client/render/MekanismRenderer.java:178` |
+| Type tab | `GuiInsetElement(overlay, gui, data, x, y, height, innerSize, left)` with `colorTab(GuiGraphics)` (from `GuiSideHolder`) | `client/gui/element/GuiInsetElement.java:27`, `client/gui/element/GuiSideHolder.java:47` |
+| Side window layout | face buttons TOP (67, 46), LEFT (44, 69), FRONT (67, 69), RIGHT (90, 69), BACK (44, 92), BOTTOM (67, 92); inner screen (38, 25, 80×12); clear sides (136, 95), 14 px; type tabs (-26, 2 + 28 i) | `client/gui/element/window/GuiSideConfiguration.java:62, 76, 83, 127` |
+| Buttons | `BasicColorButton(gui, x, y, size, Supplier<EnumColor>, left, right)`; `MekanismImageButton(gui, x, y, w, h, texW, texH, resource, left, right)` | `client/gui/element/button/BasicColorButton.java:22`, `MekanismImageButton.java:29` |
+| Text | `IFancyFontRenderer.drawScrollingString(g, text, x, y, TextAlignment, color, width, maxLengthPad, shadow)` | `client/render/IFancyFontRenderer.java:80, 223` |
+| Slots under windows | `GuiMekanism.findSlot` / `isMouseOverSlot` refuse plain slots under a window (only `IVirtualSlot`s pass); both are overridable | `client/gui/GuiMekanism.java:561, 608, 656` |
+| Faces | `RelativeSide.fromDirections(Direction facing, Direction side)`, `RelativeSide.STREAM_CODEC`; order FRONT, LEFT, RIGHT, BACK, TOP, BOTTOM | `api/java/mekanism/api/RelativeSide.java:94, 43, 19-24` (under `src/`) |

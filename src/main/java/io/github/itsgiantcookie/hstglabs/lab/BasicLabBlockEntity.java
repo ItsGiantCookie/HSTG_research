@@ -95,6 +95,8 @@ public class BasicLabBlockEntity extends BlockEntity {
             setChanged();
         }
     };
+    /** Per-face item and energy ports (D22 hybrid: our own side config, like Mekanism's). */
+    private final io.github.itsgiantcookie.hstglabs.mek.config.SideConfig sides = io.github.itsgiantcookie.hstglabs.mek.config.SideConfig.allInput();
     private final Arbiter<Technology.Ingredient> arbiter = new Arbiter<>();
     private final List<WorkerSlot<ResourceLocation, Technology.Ingredient>> slots = new ArrayList<>();
     /** Per worker slot: the exact stacks its running unit consumed, so a cancelled unit gives back the same items. */
@@ -596,6 +598,61 @@ public class BasicLabBlockEntity extends BlockEntity {
         return strictEnergy;
     }
 
+    // ---- side config ----
+
+    /** The kinds the basic lab configures: items and energy, no data (D13). */
+    public static final List<io.github.itsgiantcookie.hstglabs.mek.config.TransmissionKind> SIDE_KINDS = List.of(
+          io.github.itsgiantcookie.hstglabs.mek.config.TransmissionKind.ITEM, io.github.itsgiantcookie.hstglabs.mek.config.TransmissionKind.ENERGY);
+
+    public io.github.itsgiantcookie.hstglabs.mek.config.SideConfig sides() {
+        return sides;
+    }
+
+    private mekanism.api.RelativeSide relative(Direction side) {
+        Direction facing = getBlockState().hasProperty(BasicLabBlock.FACING) ? getBlockState().getValue(BasicLabBlock.FACING) : Direction.NORTH;
+        return mekanism.api.RelativeSide.fromDirections(facing, side);
+    }
+
+    public io.github.itsgiantcookie.hstglabs.mek.config.PortType port(io.github.itsgiantcookie.hstglabs.mek.config.TransmissionKind kind,
+          Direction side) {
+        return sides.get(kind, relative(side));
+    }
+
+    /** Item capability for a face; {@code null} side (internal access) sees everything. */
+    @Nullable
+    public net.neoforged.neoforge.items.IItemHandler itemsFor(@Nullable Direction side) {
+        if (side == null) {
+            return items;
+        }
+        return switch (port(io.github.itsgiantcookie.hstglabs.mek.config.TransmissionKind.ITEM, side)) {
+            case NONE -> null;
+            case INPUT -> new FaceItemHandler(items, true, false);
+            case OUTPUT -> new FaceItemHandler(items, false, true);
+            case INPUT_OUTPUT -> items;
+            case ENERGY -> energyItem;
+        };
+    }
+
+    public boolean acceptsEnergy(@Nullable Direction side) {
+        return side == null || port(io.github.itsgiantcookie.hstglabs.mek.config.TransmissionKind.ENERGY, side)
+              != io.github.itsgiantcookie.hstglabs.mek.config.PortType.NONE;
+    }
+
+    /** Cycles one face, or every face when {@code side} is null (Mekanism's "clear sides"). */
+    public void cycleFace(io.github.itsgiantcookie.hstglabs.mek.config.TransmissionKind kind, @Nullable mekanism.api.RelativeSide side,
+          boolean forward) {
+        if (!SIDE_KINDS.contains(kind)) {
+            return;
+        }
+        if (side == null) {
+            sides.cycleAll(kind, forward);
+        } else {
+            sides.cycle(kind, side, forward);
+        }
+        setChanged();
+        invalidateCapabilities();
+    }
+
     public IEnergyStorage feEnergy() {
         return feEnergy;
     }
@@ -612,6 +669,7 @@ public class BasicLabBlockEntity extends BlockEntity {
         tag.put("items", items.serializeNBT(registries));
         tag.put("upgrades", upgrades.serializeNBT(registries));
         tag.put("energy_item", energyItem.serializeNBT(registries));
+        tag.put("sides", sides.save());
         tag.putLong("energy", energy);
         ListTag saved = new ListTag();
         for (int i = 0; i < slots.size(); i++) {
@@ -664,6 +722,9 @@ public class BasicLabBlockEntity extends BlockEntity {
             }
         }
         upgrades.deserializeNBT(registries, tag.getCompound("upgrades"));
+        if (tag.contains("sides")) {
+            sides.load(tag.getCompound("sides"));
+        }
         if (tag.contains("energy_item")) {
             energyItem.deserializeNBT(registries, tag.getCompound("energy_item"));
         }

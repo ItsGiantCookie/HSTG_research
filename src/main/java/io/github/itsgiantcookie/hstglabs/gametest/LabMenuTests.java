@@ -20,7 +20,13 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import io.github.itsgiantcookie.hstglabs.mek.config.PortType;
+import io.github.itsgiantcookie.hstglabs.mek.config.TransmissionKind;
+import io.github.itsgiantcookie.hstglabs.packet.SideConfigPayload;
 import mekanism.api.Action;
+import mekanism.api.RelativeSide;
+import net.minecraft.core.Direction;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTest;
@@ -59,13 +65,18 @@ public final class LabMenuTests {
     public static void labStatusCodecRoundTrips(GameTestHelper helper) {
         LabStatusPayload status = new LabStatusPayload(5, 12_345_678_901L, 40_000, 20, 2, 1.5, true, List.of(
               new SlotView(Optional.of(HstgLabs.rl("t")), 7, 20, "RUNNING", "", ""),
-              new SlotView(Optional.empty(), 0, 0, "IDLE", "hstg_labs:missing_ingredients", "minecraft:paper")));
+              new SlotView(Optional.empty(), 0, 0, "IDLE", "hstg_labs:missing_ingredients", "minecraft:paper")),
+              List.of(1, 2, 0, 3, 4, 0, 1, 1, 0, 0, 0, 1)); // FRONT, LEFT, RIGHT, BACK, TOP, BOTTOM per kind
         RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), helper.getLevel().registryAccess());
         LabStatusPayload.STREAM_CODEC.encode(buf, status);
         LabStatusPayload back = LabStatusPayload.STREAM_CODEC.decode(buf);
         helper.assertTrue(back.equals(status), "round trip: " + back);
         helper.assertTrue(buf.readableBytes() == 0, "bytes left behind");
         helper.assertTrue(Math.abs(back.slots().get(0).unitProgress() - 0.65) < 1e-9 && back.slots().get(1).unitProgress() == 0, "unit progress");
+        helper.assertTrue(back.port(TransmissionKind.ITEM, RelativeSide.FRONT) == PortType.INPUT
+              && back.port(TransmissionKind.ITEM, RelativeSide.LEFT) == PortType.OUTPUT
+              && back.port(TransmissionKind.ENERGY, RelativeSide.BOTTOM) == PortType.INPUT
+              && back.port(TransmissionKind.DATA, RelativeSide.FRONT) == PortType.NONE, "faces");
         helper.succeed();
     }
 
@@ -164,5 +175,51 @@ public final class LabMenuTests {
                   "lab " + lab.energy() + " tablet " + tabletLeft);
             helper.assertTrue(tabletLeft < inTablet, "the tablet was drained");
         });
+    }
+
+    @GameTest(template = "empty")
+    public static void sideConfigDecidesWhichFacesTakeItemsAndEnergy(GameTestHelper helper) {
+        helper.setBlock(LAB, Registration.BASIC_LAB.get());
+        BasicLabBlockEntity lab = (BasicLabBlockEntity) helper.getBlockEntity(LAB);
+        var level = helper.getLevel();
+        BlockPos abs = helper.absolutePos(LAB);
+        Direction facing = lab.getBlockState().getValue(io.github.itsgiantcookie.hstglabs.lab.BasicLabBlock.FACING);
+        Direction top = Direction.UP;
+        helper.assertTrue(level.getCapability(Capabilities.ItemHandler.BLOCK, abs, top) != null, "by default every face takes items");
+        helper.assertTrue(level.getCapability(Capabilities.ItemHandler.BLOCK, abs, top).extractItem(0, 1, true).isEmpty()
+              || lab.items().getStackInSlot(0).isEmpty(), "an input face does not hand items out");
+
+        ServerPlayer player = player(helper);
+        player.setPos(abs.getX() + 0.5, abs.getY() + 1, abs.getZ() + 0.5); // within reach, so the menu stays valid
+        BasicLabMenu menu = new BasicLabMenu(7, player.getInventory(), lab);
+        player.containerMenu = menu;
+        // item TOP: INPUT -> OUTPUT -> INPUT_OUTPUT -> ENERGY -> NONE
+        for (int i = 0; i < 4; i++) {
+            helper.assertTrue(SideConfigPayload.apply(player, new SideConfigPayload(7, TransmissionKind.ITEM, Optional.of(RelativeSide.TOP), true)),
+                  "cycle " + i);
+        }
+        helper.assertTrue(lab.port(TransmissionKind.ITEM, top) == PortType.NONE, "top cycled to none: " + lab.port(TransmissionKind.ITEM, top));
+        helper.assertTrue(level.getCapability(Capabilities.ItemHandler.BLOCK, abs, top) == null, "a NONE face has no item handler");
+        helper.assertTrue(level.getCapability(Capabilities.ItemHandler.BLOCK, abs, facing) != null, "the front is untouched");
+
+        SideConfigPayload.apply(player, new SideConfigPayload(7, TransmissionKind.ENERGY, Optional.empty(), true));
+        helper.assertTrue(level.getCapability(io.github.itsgiantcookie.hstglabs.ModCapabilities.STRICT_ENERGY, abs, facing) == null
+              && level.getCapability(Capabilities.EnergyStorage.BLOCK, abs, facing) == null, "clear sides: no face takes energy");
+        helper.assertTrue(!SideConfigPayload.apply(player, new SideConfigPayload(7, TransmissionKind.DATA, Optional.empty(), true)),
+              "the basic lab has no data faces (D13)");
+        helper.assertTrue(!SideConfigPayload.apply(player, new SideConfigPayload(8, TransmissionKind.ITEM, Optional.empty(), true)),
+              "another container id is refused");
+
+        LabStatusPayload status = LabStatusPayload.of(7, lab, player);
+        helper.assertTrue(status.port(TransmissionKind.ITEM, RelativeSide.TOP) == PortType.NONE
+              && status.port(TransmissionKind.ENERGY, RelativeSide.FRONT) == PortType.NONE
+              && status.port(TransmissionKind.ITEM, RelativeSide.FRONT) == PortType.INPUT, "status carries the faces");
+
+        var saved = lab.saveWithoutMetadata(level.registryAccess());
+        helper.setBlock(LAB, Registration.BASIC_LAB.get());
+        BasicLabBlockEntity reloaded = (BasicLabBlockEntity) helper.getBlockEntity(LAB);
+        reloaded.loadWithComponents(saved, level.registryAccess());
+        helper.assertTrue(reloaded.sides().get(TransmissionKind.ITEM, RelativeSide.TOP) == PortType.NONE, "side config is saved");
+        helper.succeed();
     }
 }

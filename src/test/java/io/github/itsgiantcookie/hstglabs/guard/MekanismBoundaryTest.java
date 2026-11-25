@@ -90,4 +90,28 @@ class MekanismBoundaryTest {
               """);
         assertEquals(List.of(), BoundaryRules.mekanismLicenceViolations(List.of(source), "- `mek/Copied.java`"));
     }
+
+    @Test
+    void windowDataIsTheOnlyCommonTypeAllowedAndOnlyInMekClientD33() {
+        var ok = BoundaryRules.planted("mek/client/Win.java", """
+              package io.github.itsgiantcookie.hstglabs.mek.client;
+              import mekanism.common.inventory.container.SelectedWindowData;
+              import mekanism.common.inventory.container.SelectedWindowData.WindowType;
+              class Win {}
+              """);
+        assertEquals(List.of(), BoundaryRules.mekanismViolations(List.of(ok)));
+        var outside = BoundaryRules.planted("lab/Win.java", """
+              package io.github.itsgiantcookie.hstglabs.lab;
+              import mekanism.common.inventory.container.SelectedWindowData;
+              class Win {}
+              """);
+        assertFalse(BoundaryRules.mekanismViolations(List.of(outside)).isEmpty());
+        var neighbour = BoundaryRules.planted("mek/client/Near.java", """
+              package io.github.itsgiantcookie.hstglabs.mek.client;
+              import mekanism.common.inventory.container.SelectedWindowDataExtra;
+              import mekanism.common.inventory.container.MekanismContainer;
+              class Near {}
+              """);
+        assertEquals(2, BoundaryRules.mekanismViolations(List.of(neighbour)).size());
+    }
 }

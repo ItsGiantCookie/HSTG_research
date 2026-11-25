@@ -64,6 +64,90 @@ public class LabScreen extends GuiMekanism<BasicLabMenu> {
         inventoryLabelY = BasicLabMenu.INVENTORY_Y - 11;
     }
 
+    private SideConfigTab sideConfigTab;
+    private UpgradeTab upgradeTab;
+    private LabUpgradeWindow upgradeWindow;
+
+    /** Opens the side configuration window (Mekanism's GuiSideConfigurationTab look, position and colour). */
+    private final class SideConfigTab extends mekanism.client.gui.element.tab.window.GuiWindowCreatorTab<Void, SideConfigTab> {
+
+        SideConfigTab() {
+            super(io.github.itsgiantcookie.hstglabs.mek.MekanismCompat.gui("configuration.png"), LabScreen.this, null, -26, 6, 26, 18, true,
+                  () -> LabScreen.this.sideConfigTab);
+            setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.translatable("hstg_labs.gui.side_config")));
+        }
+
+        @Override
+        protected void colorTab(@NotNull GuiGraphics g) {
+            mekanism.client.render.MekanismRenderer.color(g, mekanism.client.SpecialColors.TAB_CONFIGURATION);
+        }
+
+        @Override
+        protected mekanism.client.gui.element.window.GuiWindow createWindow(mekanism.common.inventory.container.SelectedWindowData data) {
+            return new LabSideConfigWindow(LabScreen.this, (getXSize() - LabSideConfigWindow.WIDTH) / 2, 15, menu.containerId, LabScreen.this::status);
+        }
+
+        @Override
+        protected mekanism.common.inventory.container.SelectedWindowData getNextWindowData() {
+            return mekanism.common.inventory.container.SelectedWindowData.UNSPECIFIED;
+        }
+    }
+
+    /** Opens the upgrade window (Mekanism's GuiUpgradeWindowTab look, position and colour). */
+    private final class UpgradeTab extends mekanism.client.gui.element.tab.window.GuiWindowCreatorTab<Void, UpgradeTab> {
+
+        UpgradeTab() {
+            super(io.github.itsgiantcookie.hstglabs.mek.MekanismCompat.gui("upgrade.png"), LabScreen.this, null, BasicLabMenu.WIDTH, 6, 26, 18, false,
+                  () -> LabScreen.this.upgradeTab);
+            setTooltip(net.minecraft.client.gui.components.Tooltip.create(Component.translatable("hstg_labs.gui.upgrades")));
+        }
+
+        @Override
+        protected void colorTab(@NotNull GuiGraphics g) {
+            mekanism.client.render.MekanismRenderer.color(g, mekanism.client.SpecialColors.TAB_UPGRADE);
+        }
+
+        @Override
+        protected mekanism.client.gui.element.window.GuiWindow createWindow(mekanism.common.inventory.container.SelectedWindowData data) {
+            upgradeWindow = new LabUpgradeWindow(LabScreen.this, menu, () -> upgradeWindow = null);
+            return upgradeWindow;
+        }
+
+        @Override
+        protected mekanism.common.inventory.container.SelectedWindowData getNextWindowData() {
+            return mekanism.common.inventory.container.SelectedWindowData.UNSPECIFIED;
+        }
+    }
+
+    /** The upgrade window's two slots are plain slots under a window, which GuiMekanism would refuse. */
+    private boolean overUpgradeSlot(net.minecraft.world.inventory.Slot slot, double mouseX, double mouseY) {
+        return upgradeWindow != null && menu.isUpgradeSlot(menu.slots.indexOf(slot)) && upgradeWindow.isOverSlot(slot, mouseX, mouseY);
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    protected net.minecraft.world.inventory.Slot findSlot(double mouseX, double mouseY) {
+        if (upgradeWindow != null) {
+            for (int i = menu.itemSlots(); i < menu.itemSlots() + 2; i++) {
+                if (overUpgradeSlot(menu.slots.get(i), mouseX, mouseY)) {
+                    return menu.slots.get(i);
+                }
+            }
+        }
+        return super.findSlot(mouseX, mouseY);
+    }
+
+    @Override
+    protected boolean isMouseOverSlot(@NotNull net.minecraft.world.inventory.Slot slot, double mouseX, double mouseY) {
+        return overUpgradeSlot(slot, mouseX, mouseY) || super.isMouseOverSlot(slot, mouseX, mouseY);
+    }
+
+    @Override
+    public void removed() {
+        super.removed();
+        menu.setUpgradesShown(false);
+    }
+
     private Optional<LabStatusPayload> status() {
         return ClientResearch.lab(menu.containerId);
     }
@@ -72,6 +156,9 @@ public class LabScreen extends GuiMekanism<BasicLabMenu> {
     @Override
     protected void addSlots() {
         for (int i = 0; i < menu.slots.size(); i++) {
+            if (menu.isUpgradeSlot(i)) {
+                continue; // framed by the upgrade window
+            }
             net.minecraft.world.inventory.Slot slot = menu.slots.get(i);
             SlotType type = i == menu.energySlot() ? SlotType.POWER : SlotType.NORMAL;
             addRenderableWidget(new GuiSlot(type, this, slot.x - 1, slot.y - 1));
@@ -93,7 +180,10 @@ public class LabScreen extends GuiMekanism<BasicLabMenu> {
                 return status().filter(s -> s.capacity() > 0).map(s -> (double) s.energy() / s.capacity()).orElse(0D);
             }
         }, 6, 17, 52));
-        // left side tab, as on Mekanism machines: energy use and what is still needed
+        // side tabs as on Mekanism machines (D33): side configuration and energy on the left, upgrades on the right
+        sideConfigTab = addRenderableWidget(new SideConfigTab());
+        upgradeTab = addRenderableWidget(new UpgradeTab());
+        // energy use and what is still needed
         addRenderableWidget(new mekanism.client.gui.element.tab.GuiEnergyTab(this, () -> status().map(s -> List.<Component>of(
               Component.translatable("screen.hstg_labs.lab.using", joules(firstRunning().isPresent() ? s.usage() : 0)),
               Component.translatable("screen.hstg_labs.lab.needed", joules(Math.max(0, s.capacity() - s.energy())))))

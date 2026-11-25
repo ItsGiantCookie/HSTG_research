@@ -94,11 +94,13 @@ reshaped or deleted by the WP named.
 - WP-09 left for later:
   - **WP-10, done:** the lab screen on Mekanism's GUI classes, the energy item slot, and removal of the
     prototype lab, recipe and sample items.
-  - **WP-10 follow-up (still open):** side config on the basic lab (Items / Energy tabs, Configurator,
-    auto-eject). Mekanism's `GuiSideConfigurationTab` needs its tile base (D22), so the side config is
-    our own: `mek/config` is kept; restore `PortOverlayRenderer`, `CycleFacePayload` and the side-config
-    part of `ResearchLabScreen` from git history (before WP-10 (4/n)). The same goes for
-    `UpgradeComponent`'s install timer: the basic lab applies its upgrade cards at once today.
+  - **WP-10, done (D33):** side configuration (Items / Energy) and upgrade windows on the basic lab.
+  - **Still open:** the Mekanism Configurator in the world (cycle faces by clicking the block, port
+    overlay) and the Configuration Card. Restore `PortOverlayRenderer` from git history (before WP-10
+    (4/n)) and register `mekanism:configurable` / `config_card` for the basic lab. Also
+    `UpgradeComponent`'s install timer: the basic lab applies its upgrade cards at once.
+  - The upgrade window does not show whether the lab type supports an upgrade; `LabStatusPayload`
+    would need the lab type's `upgrades`.
   - **WP-15:** the basic lab does not expose the api role capabilities (CONTROLLER, CONSUMER, WORKER)
     yet; networks need them.
   - **WP-16:** Mekanism upgrade cards apply inside the lab; §5.8 wants them as registered modifiers like

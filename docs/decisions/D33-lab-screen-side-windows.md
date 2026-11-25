@@ -1,6 +1,6 @@
 # D33: How the lab screen gets its side-config and upgrade windows
 
-Status: **Open** (Hendrik decides) · Needed by: WP-10 follow-up (side config, upgrades window)
+Status: **Decided** (Hendrik, 2026-11-25) · Needed by: WP-10 follow-up (side config, upgrades window)
 
 ## Question
 Mekanism machines have side tabs. Side configuration and Upgrades open a window; Energy shows a
@@ -52,7 +52,17 @@ Either way, the server side is the same work and is not part of this decision:
      - The queue is hidden while a panel is open.
 
 ## Decision
-_Open. Hendrik picks._
+Option 1: allow `SelectedWindowData` (with its nested `WindowType`) in `mek/client`, and nothing else
+from `mekanism.common`.
 
 ## Consequences
-_Filled in after the decision._
+- `MekanismBoundaryTest` allows exactly `mekanism.common.inventory.container.SelectedWindowData` (and
+  its nested types) in `mek/client`; elsewhere it is still a violation, as is every other common type.
+- The windows pass `SelectedWindowData.UNSPECIFIED`: Mekanism stores no position for them and shows
+  no pin button.
+- `LabSideConfigWindow` (Items and Energy tabs, six faces, clear sides) is a normal draggable window.
+- `LabUpgradeWindow` does not move. Its two slots are plain menu slots at fixed positions, active on
+  the client only while it is open; `LabScreen` overrides `findSlot` / `isMouseOverSlot` so they take
+  clicks under the window. Mekanism's movable virtual slots are in its common code, so we do not use
+  them.
+- Auto-eject is shown as unsupported: the lab has nothing to eject.

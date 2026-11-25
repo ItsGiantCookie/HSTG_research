@@ -19,6 +19,10 @@ always listed here (docs/design.md §9.1). Every API type is `@ApiStatus.Experim
   - unit progress, the current technology with `done/U` and ETA;
   - the queue (move up, move down, remove) and the technologies the player can add. Blocked
     technologies show in red and can be re-added (D32).
+- Side tabs as on Mekanism machines: side configuration (left, a window with Items and Energy tabs,
+  six faces, clear sides), energy (left), upgrades (right, a window with the speed and energy slots,
+  amount and effect). Item and energy capabilities follow the face config. Every face starts as
+  input, so existing hopper and cable setups keep working; input faces no longer hand items out.
 - Lab tiers are data (D28): `data/<ns>/hstg_labs/lab_tier/<level>.json` with `name`, `color` and
   `icon`. The defaults are Mekanism's Basic, Advanced, Elite and Ultimate.
 - Removed: the prototype `hstg_labs:research_lab` block, the `hstg_labs:research` recipe type, and the

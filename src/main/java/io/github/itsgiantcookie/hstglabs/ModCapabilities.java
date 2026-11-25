@@ -44,9 +44,10 @@ public final class ModCapabilities {
     public static void register(RegisterCapabilitiesEvent event) {
         // WP-09 basic lab: items from automation, Joules (Mekanism) and FE (D23)
         var basicLab = Registration.BASIC_LAB_BE.get();
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, basicLab, (be, side) -> be.items());
-        event.registerBlockEntity(STRICT_ENERGY, basicLab, (be, side) -> be.strictEnergy());
-        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, basicLab, (be, side) -> be.feEnergy());
+        // per face as the lab's side config says (WP-10, D33)
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, basicLab, (be, side) -> be.itemsFor(side));
+        event.registerBlockEntity(STRICT_ENERGY, basicLab, (be, side) -> be.acceptsEnergy(side) ? be.strictEnergy() : null);
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, basicLab, (be, side) -> be.acceptsEnergy(side) ? be.feEnergy() : null);
 
         event.registerBlockEntity(DATA, Registration.DATA_CABLE_BE.get(), DataCableBlockEntity::getDataHandler);
         event.registerBlockEntity(DATA, Registration.DATA_CONSUMER_BE.get(), DataConsumerBlockEntity::getDataHandler);

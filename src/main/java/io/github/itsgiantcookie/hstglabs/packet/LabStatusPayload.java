@@ -9,7 +9,10 @@ import io.github.itsgiantcookie.hstglabs.core.WorkerSlot;
 import io.github.itsgiantcookie.hstglabs.lab.BasicLabBlockEntity;
 import io.github.itsgiantcookie.hstglabs.research.ResearchManager;
 import io.github.itsgiantcookie.hstglabs.tech.Technology;
+import io.github.itsgiantcookie.hstglabs.mek.config.PortType;
+import io.github.itsgiantcookie.hstglabs.mek.config.TransmissionKind;
 import java.util.ArrayList;
+import mekanism.api.RelativeSide;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -26,9 +29,11 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
  * runs or the reason it is idle (§4.4). Sent by the open menu every few ticks.
  *
  * @param ownedByViewer false when the lab belongs to another owner; the screen then hides queue editing
+ * @param faces         side config: {@link PortType} ordinals, for each of
+ *                      {@link BasicLabBlockEntity#SIDE_KINDS} the six {@link RelativeSide}s in enum order
  */
 public record LabStatusPayload(int containerId, long energy, long capacity, long usage, int tier, double speed, boolean ownedByViewer,
-      List<SlotView> slots) implements CustomPacketPayload {
+      List<SlotView> slots, List<Integer> faces) implements CustomPacketPayload {
 
     public static final Type<LabStatusPayload> TYPE = new Type<>(HstgLabs.rl("lab_status"));
     public static final StreamCodec<RegistryFriendlyByteBuf, LabStatusPayload> STREAM_CODEC = StreamCodec.of(LabStatusPayload::write,
@@ -36,6 +41,14 @@ public record LabStatusPayload(int containerId, long energy, long capacity, long
 
     public LabStatusPayload {
         slots = List.copyOf(slots);
+        faces = List.copyOf(faces);
+    }
+
+    /** The port of one face for one kind; NONE when the kind is not configurable here. */
+    public PortType port(TransmissionKind kind, RelativeSide side) {
+        int k = BasicLabBlockEntity.SIDE_KINDS.indexOf(kind);
+        int i = k * RelativeSide.values().length + side.ordinal();
+        return k < 0 || i >= faces.size() ? PortType.NONE : PortType.values()[Math.floorMod(faces.get(i), PortType.values().length)];
     }
 
     /**
@@ -74,11 +87,13 @@ public record LabStatusPayload(int containerId, long energy, long capacity, long
         buf.writeDouble(p.speed);
         buf.writeBoolean(p.ownedByViewer);
         SlotView.STREAM_CODEC.apply(ByteBufCodecs.list()).encode(buf, p.slots);
+        ByteBufCodecs.VAR_INT.apply(ByteBufCodecs.list()).encode(buf, p.faces);
     }
 
     private static LabStatusPayload read(RegistryFriendlyByteBuf buf) {
         return new LabStatusPayload(buf.readVarInt(), buf.readVarLong(), buf.readVarLong(), buf.readVarLong(), buf.readVarInt(), buf.readDouble(),
-              buf.readBoolean(), SlotView.STREAM_CODEC.apply(ByteBufCodecs.list()).decode(buf));
+              buf.readBoolean(), SlotView.STREAM_CODEC.apply(ByteBufCodecs.list()).decode(buf),
+              ByteBufCodecs.VAR_INT.apply(ByteBufCodecs.list()).decode(buf));
     }
 
     @Override
@@ -107,6 +122,12 @@ public record LabStatusPayload(int containerId, long energy, long capacity, long
                   reason == null ? "" : reason.detail()));
         }
         int tier = lab.type().map(t -> t.tier()).orElse(0);
-        return new LabStatusPayload(containerId, lab.energy(), lab.energyCapacity(), lab.energyPerTick(), tier, lab.speed(null), own, slots);
+        List<Integer> faces = new ArrayList<>();
+        for (TransmissionKind kind : BasicLabBlockEntity.SIDE_KINDS) {
+            for (RelativeSide side : RelativeSide.values()) {
+                faces.add(lab.sides().get(kind, side).ordinal());
+            }
+        }
+        return new LabStatusPayload(containerId, lab.energy(), lab.energyCapacity(), lab.energyPerTick(), tier, lab.speed(null), own, slots, faces);
     }
 }

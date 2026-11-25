@@ -25,6 +25,8 @@ final class BoundaryRules {
     static final String MEK_API = "mekanism.api.";
     /** D22 = hybrid: the only internals allowed are Mekanism's client GUI classes, and only in mek/client. */
     static final String MEK_CLIENT = "mekanism.client.";
+    /** D33: the one common type Mekanism's window classes need, allowed in mek/client only. */
+    static final String MEK_WINDOW_DATA = "mekanism.common.inventory.container.SelectedWindowData";
     static final String MEK_CLIENT_PACKAGE = "mek.client";
 
     static final List<String> CORE_FORBIDDEN = List.of("net.minecraft.", "net.neoforged.", HS, MEK, "com.mojang.");
@@ -140,7 +142,8 @@ final class BoundaryRules {
                 if (ref.startsWith(MEK_API)) {
                     continue;
                 }
-                if (!ref.startsWith(MEK_CLIENT)) {
+                boolean windowData = ref.equals(MEK_WINDOW_DATA) || ref.startsWith(MEK_WINDOW_DATA + ".");
+                if (!ref.startsWith(MEK_CLIENT) && !windowData) {
                     out.add(SourceScanner.describe(s, "Mekanism internal outside its client GUI classes (D22): " + ref));
                 } else if (!s.inPackage(MEK_CLIENT_PACKAGE)) {
                     out.add(SourceScanner.describe(s, "Mekanism GUI class used outside mek/client (D22): " + ref));
