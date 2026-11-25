@@ -20,6 +20,7 @@ public final class ClientSetup {
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(Registration.RESEARCH_LAB_MENU.get(), ResearchLabScreen::new);
+        event.register(Registration.BASIC_LAB_MENU.get(), io.github.itsgiantcookie.hstglabs.mek.client.LabScreen::new);
     }
 
     /** Science packs: layer 1 (the liquid) takes the pack's colour from the synced pack definitions. */

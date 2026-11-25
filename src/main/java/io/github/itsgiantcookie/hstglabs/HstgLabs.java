@@ -67,6 +67,7 @@ public final class HstgLabs {
         // WP-10: research snapshots to clients, queue edits from clients
         modBus.addListener(TechSnapshotPayload::register);
         modBus.addListener(QueueEditPayload::register);
+        modBus.addListener(io.github.itsgiantcookie.hstglabs.packet.LabStatusPayload::register);
         SnapshotSync.register();
         if (DemoAddon.enabled()) {
             DemoAddon.register(modBus);

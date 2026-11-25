@@ -1,5 +1,6 @@
 package io.github.itsgiantcookie.hstglabs.client;
 
+import io.github.itsgiantcookie.hstglabs.packet.LabStatusPayload;
 import io.github.itsgiantcookie.hstglabs.packet.ResearchViews.QueueView;
 import io.github.itsgiantcookie.hstglabs.packet.ResearchViews.TechView;
 import io.github.itsgiantcookie.hstglabs.packet.TechSnapshotPayload;
@@ -46,6 +47,19 @@ public final class ClientResearch {
     public static void clear() {
         technologies = List.of();
         queue = QueueView.EMPTY;
+        lab = null;
         revision++;
+    }
+
+    private static volatile LabStatusPayload lab;
+
+    public static void acceptLab(LabStatusPayload payload) {
+        lab = payload;
+    }
+
+    /** The last status of the lab whose menu has this container id. */
+    public static Optional<LabStatusPayload> lab(int containerId) {
+        LabStatusPayload l = lab;
+        return l != null && l.containerId() == containerId ? Optional.of(l) : Optional.empty();
     }
 }

@@ -84,6 +84,17 @@ public class BasicLabBlock extends BaseEntityBlock {
         return level.isClientSide ? null : createTickerHelper(type, Registration.BASIC_LAB_BE.get(), BasicLabBlockEntity::serverTick);
     }
 
+    /** Opens the lab screen ({@link BasicLabMenu}). */
+    @Override
+    protected net.minecraft.world.InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, net.minecraft.world.entity.player.Player player,
+          net.minecraft.world.phys.BlockHitResult hit) {
+        if (!level.isClientSide && player instanceof ServerPlayer sp && level.getBlockEntity(pos) instanceof BasicLabBlockEntity lab) {
+            sp.openMenu(new net.minecraft.world.SimpleMenuProvider((id, inventory, p) -> new BasicLabMenu(id, inventory, lab), getName()),
+                  buf -> BasicLabMenu.writeOpenData(lab, buf));
+        }
+        return net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide);
+    }
+
     /** The lab belongs to the research owner of whoever placed it (§5.10). */
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {

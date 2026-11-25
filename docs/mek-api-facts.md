@@ -103,3 +103,18 @@ option starts from verified facts. All paths relative to `ref/Mekanism/src/`.
 | FE ↔ Joules | `feConversionRate` default `2.5` (1 FE = 2.5 J) | `main/java/mekanism/common/config/GeneralConfig.java:194-195` | Hard-coded `BasicLabBlockEntity.JOULES_PER_FE`; Mekanism's config is internal (D22) |
 | Upgrade item ids | `mekanism:upgrade_speed`, `mekanism:upgrade_energy` | `main/java/mekanism/common/registries/MekanismItems.java:234-235` | By id; up to 8 each (`Upgrade.getMax()`) |
 | Upgrade maths | ticks × 10^(−s/8), energy/t × 10^((2s−e)/8), capacity × 10^(e/8) | `main/java/mekanism/common/util/MekanismUtils.java:326, 355, 390` | Re-implemented in `BasicLabBlockEntity` (speed, energyPerTick, energyCapacity) |
+
+## WP-10 lab screen (`mek/client/LabScreen`, D22 hybrid: `mekanism.client.**` only, no tile base)
+Paths under `ref/Mekanism/src/main/java/mekanism/client/`.
+
+| Need | Fact | Where |
+| --- | --- | --- |
+| Screen base | `protected GuiMekanism(CONTAINER, Inventory, Component)`; `protected boolean dynamicSlots` makes `addGuiElements` add a `GuiSlot` behind every menu slot | `gui/GuiMekanism.java:69, 57, 133` |
+| Hooks | `addGuiElements()`, `containerTick()`, `drawForegroundText(GuiGraphics, int, int)`, `renderInventoryText(GuiGraphics)` (uses `inventoryLabelX/Y`) | `gui/GuiMekanism.java:133, 165, 449, 196` |
+| Text colour | `IFancyFontRenderer.titleTextColor()` | `render/IFancyFontRenderer.java:36` |
+| Energy bar | `GuiVerticalPowerBar(IGuiWrapper, IBarInfoHandler, x, y, desiredHeight)`; `GuiBar.IBarInfoHandler { getLevel(); getTooltip() }` | `gui/element/bar/GuiVerticalPowerBar.java:44`, `gui/element/bar/GuiBar.java:106` |
+| Progress arrow | `GuiProgress(IProgressInfoHandler, ProgressType, IGuiWrapper, x, y)`; `ProgressType.LARGE_RIGHT` (48×8); `IProgressInfoHandler { getProgress(); isActive() }` | `gui/element/progress/GuiProgress.java:39`, `ProgressType.java:9`, `IProgressInfoHandler.java:3` |
+| Inner screen | `GuiInnerScreen(IGuiWrapper, x, y, w, h, Supplier<List<Component>>)`, `.padding(int)`, `.spacing(int)` | `gui/element/GuiInnerScreen.java:42, 63, 54` |
+| Lists | `GuiTextScrollList(IGuiWrapper, x, y, w, h)` (10 px rows), `setText(List<String>)`, `getSelection()`, `clearSelection()` | `gui/element/scroll/GuiTextScrollList.java:17, 45, 36, 41` |
+| Buttons | `MekanismButton(IGuiWrapper, x, y, w, h, Component, IClickable)`; `GuiElement.IClickable.onClick(GuiElement, double, double)` | `gui/element/button/MekanismButton.java:23`, `gui/element/GuiElement.java:728` |
+| Not used | `GuiDynamicHorizontalRateBar`'s colour parameter is `mekanism.common.lib.Color.ColorFunction` (common, internal) | `gui/element/bar/GuiDynamicHorizontalRateBar.java:6` |

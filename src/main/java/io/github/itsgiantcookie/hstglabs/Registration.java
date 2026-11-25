@@ -104,6 +104,8 @@ public final class Registration {
 
     public static final DeferredHolder<MenuType<?>, MenuType<ResearchLabMenu>> RESEARCH_LAB_MENU =
           MENUS.register("research_lab", () -> IMenuTypeExtension.create(ResearchLabMenu::new));
+    public static final DeferredHolder<MenuType<?>, MenuType<io.github.itsgiantcookie.hstglabs.lab.BasicLabMenu>> BASIC_LAB_MENU =
+          MENUS.register("basic_lab", () -> IMenuTypeExtension.create(io.github.itsgiantcookie.hstglabs.lab.BasicLabMenu::new));
 
     // --- recipes ---
 
