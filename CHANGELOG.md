@@ -101,6 +101,27 @@ always listed here (docs/design.md §9.1). Every API type is `@ApiStatus.Experim
 - **Events:** `ResearchEvent.Started`, `UnitCompleted`, `Completed`, `Blocked`, `BeforeEnqueue` and
   `QueueChanged` are now fired.
 
+### Lab types and the basic lab (WP-09)
+
+- **Lab types as data (D17):** `data/<ns>/hstg_labs/lab_type/<id>.json` with roles, tier, speed,
+  parallel, `energy_per_tick` / `energy_capacity` (Joules), `item_slots`, `accepts`, `tags`,
+  `upgrades` and controller capacity.
+  - Lab type sources follow the data files.
+  - `config/hstg_labs/lab_types/` overrides single fields, and `/reload` applies them.
+  - Technology validation now checks against the real lab types, including which HS stages lock each
+    lab block.
+- **The basic lab** (`hstg_labs:basic_lab`, tier 1): one block that is controller, consumer and
+  worker.
+  - Works on its owner's queue head (D18) through the core scheduler.
+  - Takes one pack set at the start of a unit and remembers the exact stacks.
+  - Draws 20 J/t; accepts Mekanism Joules and FE at 2.5 J/FE.
+  - Mekanism speed and energy upgrade cards use Mekanism's maths; registered modifiers apply.
+  - Breaking it mid-unit credits nothing and drops every pack.
+  - Running units are saved and resume after a restart.
+  - One block entity type collects every block of the lab class, so other mods' and KubeJS lab blocks
+    are included.
+- **Demo:** the "+10 % speed" modifier now applies only to the demo's own technologies.
+
 ### Development
 
 - Demo addon (`demo/`): registers one of every extension point using only `api`. Enabled with

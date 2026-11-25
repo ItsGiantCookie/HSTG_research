@@ -51,6 +51,12 @@ public final class ModCapabilities {
         event.registerBlockEntity(CONFIGURABLE, lab, ResearchLabBlockEntity::getConfigurable);
         event.registerBlockEntity(CONFIG_CARD, lab, (be, side) -> be);
 
+        // WP-09 basic lab: items from automation, Joules (Mekanism) and FE (D23)
+        var basicLab = Registration.BASIC_LAB_BE.get();
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, basicLab, (be, side) -> be.items());
+        event.registerBlockEntity(STRICT_ENERGY, basicLab, (be, side) -> be.strictEnergy());
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, basicLab, (be, side) -> be.feEnergy());
+
         event.registerBlockEntity(DATA, Registration.DATA_CABLE_BE.get(), DataCableBlockEntity::getDataHandler);
         event.registerBlockEntity(DATA, Registration.DATA_CONSUMER_BE.get(), DataConsumerBlockEntity::getDataHandler);
     }

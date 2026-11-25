@@ -95,3 +95,11 @@ option starts from verified facts. All paths relative to `ref/Mekanism/src/`.
 | Chemical tags | `MekanismAPI.CHEMICAL_REGISTRY_NAME` (`ResourceKey<Registry<Chemical>>`), with vanilla `TagKey.codec` / `TagKey.create` | `api/java/mekanism/api/MekanismAPI.java:65` |
 | Holder by id (network decode) | `MekanismAPI.CHEMICAL_REGISTRY` (`DefaultedRegistry<Chemical>`), vanilla `getHolder(ResourceLocation)` | `api/java/mekanism/api/MekanismAPI.java:120` |
 | Matching | `ChemicalStack.is(Holder<Chemical>)`, `is(TagKey<Chemical>)` | `api/java/mekanism/api/chemical/ChemicalStack.java:333, 294` |
+
+## WP-09: basic lab energy and upgrades
+
+| Need | Fact | Where | How we use it |
+| --- | --- | --- | --- |
+| FE ↔ Joules | `feConversionRate` default `2.5` (1 FE = 2.5 J) | `main/java/mekanism/common/config/GeneralConfig.java:194-195` | Hard-coded `BasicLabBlockEntity.JOULES_PER_FE`; Mekanism's config is internal (D22) |
+| Upgrade item ids | `mekanism:upgrade_speed`, `mekanism:upgrade_energy` | `main/java/mekanism/common/registries/MekanismItems.java:234-235` | By id; up to 8 each (`Upgrade.getMax()`) |
+| Upgrade maths | ticks × 10^(−s/8), energy/t × 10^((2s−e)/8), capacity × 10^(e/8) | `main/java/mekanism/common/util/MekanismUtils.java:326, 355, 390` | Re-implemented in `BasicLabBlockEntity` (speed, energyPerTick, energyCapacity) |

@@ -12,6 +12,8 @@ import io.github.itsgiantcookie.hstglabs.lab.ResearchRecipe;
 import java.util.EnumMap;
 import java.util.Map;
 import io.github.itsgiantcookie.hstglabs.tech.SciencePackItem;
+import io.github.itsgiantcookie.hstglabs.lab.BasicLabBlock;
+import io.github.itsgiantcookie.hstglabs.lab.BasicLabBlockEntity;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -109,6 +111,23 @@ public final class Registration {
           RECIPE_TYPES.register("research", () -> RecipeType.simple(HstgLabs.rl("research")));
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<ResearchRecipe>> RESEARCH_RECIPE_SERIALIZER =
           RECIPE_SERIALIZERS.register("research", ResearchRecipe.Serializer::new);
+
+    // --- labs (WP-09, docs/design.md §5.2, §5.5) ---
+
+    public static final DeferredBlock<BasicLabBlock> BASIC_LAB = BLOCKS.register("basic_lab", () -> new BasicLabBlock(machineProperties()));
+    public static final DeferredItem<BlockItem> BASIC_LAB_ITEM = ITEMS.registerSimpleBlockItem(BASIC_LAB);
+
+    /**
+     * One block entity type for every {@link BasicLabBlock}, built when block entity types register,
+     * after all blocks exist, so lab blocks from other mods and KubeJS are included (§5.5).
+     */
+    @SuppressWarnings("DataFlowIssue")
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BasicLabBlockEntity>> BASIC_LAB_BE = BLOCK_ENTITIES.register("basic_lab",
+          () -> BlockEntityType.Builder.of(BasicLabBlockEntity::new, blocksOf(BasicLabBlock.class)).build(null));
+
+    private static Block[] blocksOf(Class<? extends Block> type) {
+        return net.minecraft.core.registries.BuiltInRegistries.BLOCK.stream().filter(type::isInstance).toArray(Block[]::new);
+    }
 
     // --- science packs (WP-07, docs/design.md §8.2) ---
 

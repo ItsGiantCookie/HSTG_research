@@ -197,6 +197,35 @@ public final class ResearchManager {
         return added;
     }
 
+    /**
+     * A lab finished a unit of {@code tech} for {@code owner} (the progress already counts it):
+     * fires {@link ResearchEvent.UnitCompleted} and unlocks it if that was the last unit.
+     */
+    public void unitCredited(OwnerId owner, ResourceLocation tech) {
+        ResearchBook<ResourceLocation> book = book(owner);
+        book.unitCredited(tech);
+        data().setDirty();
+        book.progress(tech).ifPresent(p -> NeoForge.EVENT_BUS.post(new ResearchEvent.UnitCompleted(owner, tech, p.done(), p.units())));
+        processPending(owner);
+    }
+
+    /** A lab claimed its first unit of {@code tech} for {@code owner}. */
+    public void unitClaimed(OwnerId owner, ResourceLocation tech) {
+        data().setDirty();
+        book(owner).progress(tech).filter(p -> p.done() == 0 && p.inFlight() == 1)
+              .ifPresent(p -> NeoForge.EVENT_BUS.post(new ResearchEvent.Started(owner, tech)));
+    }
+
+    /** Progress changed outside this class (a lab cancelled a unit): save it. */
+    public void changed() {
+        data().setDirty();
+    }
+
+    /** The enabled technology with this id. */
+    public static Optional<Technology> technologyById(ResourceLocation id) {
+        return technology(id);
+    }
+
     /** Whether the owner already has the technology's stage (HS is the source of truth, §4.1). */
     public boolean isResearched(OwnerId owner, Technology technology) {
         String stage = technology.stage();

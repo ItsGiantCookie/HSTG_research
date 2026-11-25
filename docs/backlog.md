@@ -91,3 +91,15 @@ reshaped or deleted by the WP named.
     `gametest/TestTeams`; a real FTB party needs logged-in players.
   - **GameTests:** mock players fire join events that KubeJS answers with a client packet, so tests
     avoid them.
+- WP-09 left for later:
+  - **WP-10:** the basic lab has no screen yet, and the prototype `research_lab` block (with its screen)
+    is still there. WP-10 builds the real lab screen on Mekanism's GUI classes (D22 hybrid) and then
+    removes the prototype lab, recipe and sample items.
+  - **WP-10:** an energy item slot (charge from batteries) and the side config on the basic lab: reuse
+    the prototype `mek/config` and `UpgradeComponent` with its install timer.
+  - **WP-15:** the basic lab does not expose the api role capabilities (CONTROLLER, CONSUMER, WORKER)
+    yet; networks need them.
+  - **WP-16:** Mekanism upgrade cards apply inside the lab; §5.8 wants them as registered modifiers like
+    any other.
+  - **Not handled yet:** a lab type reload that changes `item_slots` reaches placed labs only when they
+    load; until then they keep their slot count.

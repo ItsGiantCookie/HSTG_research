@@ -221,7 +221,7 @@ public final class DemoAddon {
         }
     }
 
-    /** Modifier: +10 % speed for every site. */
+    /** Modifier: +10 % speed on the demo's own technologies only, so a dev world's real research keeps its numbers. */
     static final class DemoSiteSpeed implements Modifier {
 
         @Override
@@ -236,7 +236,7 @@ public final class DemoAddon {
 
         @Override
         public double modify(double value, ModifierContext context) {
-            return value * 1.1;
+            return context.technology().filter(t -> t.getPath().startsWith("demo_")).isPresent() ? value * 1.1 : value;
         }
     }
 

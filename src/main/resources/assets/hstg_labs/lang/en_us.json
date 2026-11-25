@@ -57,5 +57,6 @@
   "itemGroup.hstg_labs": "HSTG: Research Labs",
   "item.hstg_labs.science_pack": "Science Pack",
   "item.hstg_labs.science_pack.unknown": "Unknown Science Pack (%s)",
-  "item.hstg_labs.science_pack.tier": "Tier %s"
+  "item.hstg_labs.science_pack.tier": "Tier %s",
+  "block.hstg_labs.basic_lab": "Basic Lab"
 }
