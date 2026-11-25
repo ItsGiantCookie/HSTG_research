@@ -77,5 +77,7 @@
   "tier.hstg_labs.basic": "Basic",
   "tier.hstg_labs.advanced": "Advanced",
   "tier.hstg_labs.elite": "Elite",
-  "tier.hstg_labs.ultimate": "Ultimate"
+  "tier.hstg_labs.ultimate": "Ultimate",
+  "screen.hstg_labs.lab.using": "Using: %s/t",
+  "screen.hstg_labs.lab.needed": "Needed: %s"
 }

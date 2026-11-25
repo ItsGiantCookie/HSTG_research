@@ -1035,6 +1035,7 @@ All 31 decisions were settled with Hendrik on 2026-11-24; the Decision column ho
 | D30 | Upgrading labs in place | Own items + Mekanism installers · own items only · Mekanism installers only · rebuild | Chosen: own tier upgrade items only; contents and claimed units survive | WP-15 | Decided |
 | D31 | How team progress and queues are keyed (HS's team API has no team id) | FTB team id with solo fallback · per player, mirrored to teammates · member-set key with merge rules · ask HS for a team id | FTB Teams team UUID via its API (soft dependency); otherwise a team of one | WP-08 | Decided |
 | D32 | A blocked technology and the queue | Move to the back · remove from the queue · stay at the head | Remove from the queue, keep progress and the BLOCKED mark; re-adding retries (docs/decisions/D32-blocked-technology-in-queue.md) | WP-08 | Decided |
+| D33 | Side-config and upgrade windows in the lab screen | Allow `SelectedWindowData` in `mek/client` (real Mekanism windows) · own windows with the `MekGui` port · tabs swap an in-screen panel | — (docs/decisions/D33-lab-screen-side-windows.md) | WP-10 follow-up | Open |
 
 ### 15.2 Risks
 

@@ -93,6 +93,11 @@ public class LabScreen extends GuiMekanism<BasicLabMenu> {
                 return status().filter(s -> s.capacity() > 0).map(s -> (double) s.energy() / s.capacity()).orElse(0D);
             }
         }, 6, 17, 52));
+        // left side tab, as on Mekanism machines: energy use and what is still needed
+        addRenderableWidget(new mekanism.client.gui.element.tab.GuiEnergyTab(this, () -> status().map(s -> List.<Component>of(
+              Component.translatable("screen.hstg_labs.lab.using", joules(firstRunning().isPresent() ? s.usage() : 0)),
+              Component.translatable("screen.hstg_labs.lab.needed", joules(Math.max(0, s.capacity() - s.energy())))))
+              .orElse(List.of())));
         addRenderableWidget(new GuiProgress(new IProgressInfoHandler() {
             @Override
             public double getProgress() {
