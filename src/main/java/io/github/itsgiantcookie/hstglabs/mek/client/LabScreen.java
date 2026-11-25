@@ -257,12 +257,14 @@ public class LabScreen extends GuiMekanism<BasicLabMenu> {
         }
     }
 
-    /** {@code idle.<namespace>.<path>} with the detail as argument; addon reasons bring their own key. */
+    /** The registered reason's lang key (§9.2 {@code IdleReasonType}) with the detail as argument; the raw id when unknown. */
     private static Component idle(SlotView v) {
+        String fallback = v.reason() + (v.detail().isEmpty() ? "" : " (" + v.detail() + ")");
         ResourceLocation id = ResourceLocation.tryParse(v.reason());
-        String key = id == null ? "idle.hstg_labs.unknown" : "idle." + id.getNamespace() + "." + id.getPath();
-        return Component.translatableWithFallback(key, v.reason() + (v.detail().isEmpty() ? "" : " (" + v.detail() + ")"), v.detail())
-              .withStyle(ChatFormatting.GOLD);
+        Optional<io.github.itsgiantcookie.hstglabs.api.lab.IdleReasonType> type = id == null ? Optional.empty()
+              : io.github.itsgiantcookie.hstglabs.research.ApiRegistries.IDLE_REASONS.get(id);
+        return type.<Component>map(t -> Component.translatableWithFallback(t.translationKey(), fallback, v.detail()))
+              .orElse(Component.literal(fallback)).copy().withStyle(ChatFormatting.GOLD);
     }
 
     static String joules(long j) {

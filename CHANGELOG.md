@@ -5,6 +5,26 @@ always listed here (docs/design.md §9.1). Every API type is `@ApiStatus.Experim
 
 ## Unreleased
 
+### WP-10: packets and the lab screen
+
+- Network (protocol `2`):
+  - `tech_snapshot` (S→C): every technology as the player sees it (state, cost, prerequisites,
+    unlock preview), the owner's queue and progress, and the lab tiers.
+  - `queue_edit` (C→S): add, remove, move. It checks `queue_permission` and History Stages
+    reachability and requirements.
+  - `lab_status` (S→C, while a lab screen is open): energy, tier, speed, and per worker slot the
+    running unit or the idle reason.
+- The basic lab has a screen (right-click):
+  - energy bar, energy item slot (Mekanism energy items or FE items), speed and energy upgrade slots;
+  - unit progress, the current technology with `done/U` and ETA;
+  - the queue (move up, move down, remove) and the technologies the player can add. Blocked
+    technologies show in red and can be re-added (D32).
+- Lab tiers are data (D28): `data/<ns>/hstg_labs/lab_tier/<level>.json` with `name`, `color` and
+  `icon`. The defaults are Mekanism's Basic, Advanced, Elite and Ultimate.
+- Removed: the prototype `hstg_labs:research_lab` block, the `hstg_labs:research` recipe type, and the
+  `research_sample` and `empty_sample_vial` items. Worlds from dev builds lose those blocks and items.
+- No API change.
+
 ### API: first skeleton, `HSLabsAPI.API_VERSION` 1, `API_MINOR` 0 (WP-06)
 
 - `api.HSLabsAPI`: mod id and API version constants.

@@ -12,16 +12,16 @@ reshaped or deleted by the WP named.
 
 | Prototype piece | Now at | Absorbed by | What changes |
 | --- | --- | --- | --- |
-| Research lab block, block entity, menu (`lab/ResearchLab*`) | `lab/` | WP-09 basic lab (`hstg_labs:basic_lab`) | Consumes science-pack sets per unit instead of samples; speed, slots, tier, energy from its lab type; ticks a `LabCycle` claimed from `ResearchManager` |
-| Lab screen (`client/ResearchLabScreen`) | `client/` | WP-09 / WP-10 `LabScreen` | Keeps the Mekanism look; adds current technology, progress `done/U`, ETA, queue, idle reason (§4.4) |
+| Research lab block, block entity, menu (`lab/ResearchLab*`) | removed in WP-10 | WP-09 basic lab (`hstg_labs:basic_lab`) | Done. Its block models and textures stay as the basic lab's shared casing |
+| Lab screen (`client/ResearchLabScreen`) | removed in WP-10 | WP-10 `mek/client/LabScreen` on `GuiMekanism` | Done: energy, unit progress, current technology, `done/U`, ETA, queue, idle reason |
 | Mekanism GUI port (`mek/client/MekGui`) | `mek/client/` | WP-05a spike, WP-09, WP-16 core screen | Shared GUI pieces (9-slice, tabs, windows, bars, digital buttons). Port of Mekanism GuiUtils/GuiElement drawing, MIT header kept (§7.2 rule 4) |
-| Side config with Items / Energy / Data tabs, Configurator, auto-eject (`mek/config/*`, `client/PortOverlayRenderer`) | `mek/` | Kept and grown (D22 hybrid: own side config); WP-09 for basic lab, WP-15 for consumers; add a chemical tab | Data tab goes away on the basic lab (D13: it never joins a network); kinds become id-keyed (§9.6) |
+| Side config with Items / Energy / Data tabs, Configurator, auto-eject (`mek/config/*`; `client/PortOverlayRenderer` and `packet/CycleFacePayload` were removed with the prototype in WP-10, restore them from git history) | `mek/` | Kept and grown (D22 hybrid: own side config); WP-09 for basic lab, WP-15 for consumers; add a chemical tab | Data tab goes away on the basic lab (D13: it never joins a network); kinds become id-keyed (§9.6) |
 | Upgrade window + `mek/UpgradeComponent` (Speed, Energy, Mekanism formulas) | `mek/` | WP-09 | Effects move into the modifier registry (§5.8, §9.2) instead of being applied directly |
-| Joule buffer, energy slot, Mekanism strict-energy capability by name | `lab/`, `ModCapabilities` | WP-09 (D6, D23) | `energy_per_tick` from the lab type; FE accepted too |
+| Joule buffer, energy slot, Mekanism strict-energy capability by name | `lab/`, `ModCapabilities` | WP-09 (D6, D23), energy slot WP-10 | Done |
 | Tiered data cables, `grid/DataNetwork`, `grid/DataNetworkManager` (join, merge, BFS split, unload handling) | `grid/` | WP-15 Research Cable + `GridManager` | Network becomes a membership graph of `NODE` capabilities, no data buffer; size cap `grid_max_nodes`; open question for WP-15: keep cable tiers or one cable |
 | `grid/IDataHandler`, `hstg_labs:data_handler` capability | `grid/`, `ModCapabilities` | WP-15 (the api's `ResearchCapabilities` exist since WP-06) | Replaced by CONTROLLER / CONSUMER / WORKER / NODE when the grid is rebuilt |
 | Data consumer block (dummy sink) | `grid/` | WP-15 | Deleted; Pack Consumer is a different role |
-| `lab/ResearchRecipe` (sample + energy + time → data + vial), research sample / empty vial items | `lab/` | WP-07 / WP-20 | Replaced by technology cost and ingredient types; the items may stay as testpack content or go |
+| `lab/ResearchRecipe` (sample + energy + time → data + vial), research sample / empty vial items | removed in WP-10 | WP-07 | Replaced by technology cost and ingredient types |
 | Art pipeline (`art/scripts`, provenance, mekstyle linter) | `art/` | all asset work | Kept as is |
 
 ## Other
@@ -47,8 +47,9 @@ reshaped or deleted by the WP named.
 - WP-06 left out `RegisterStructurePatternsEvent` (M5) and the §9.5 facades (`ResearchApi`,
   `Technologies`, `GridApi`, `TechEditor`, `ClientResearch`). Each arrives with the WP that implements
   what it fronts (WP-08, WP-07, WP-15, WP-12, WP-10).
-- WP-10: the built-in idle reasons point at `hstg_labs:textures/gui/idle/<reason>.png`, which do not
-  exist yet. Draw them per the mekstyle skill when the lab screen shows idle reasons.
+- WP-10 follow-up / WP-19: the built-in idle reasons point at `hstg_labs:textures/gui/idle/<reason>.png`,
+  which do not exist yet. The lab screen shows idle reasons as text (their `IdleReasonType` lang key);
+  draw the icons per the mekstyle skill when the screen or Jade shows them.
 - WP-21: `docs/api.md` (a how-to per extension point) is not written yet; the javadoc and the demo
   addon are the reference until then.
 - WP-07 left for later (docs/design.md §8.3), each needs data that does not exist yet:
@@ -63,8 +64,8 @@ reshaped or deleted by the WP named.
     `BuiltInTypes.setStageUnlocker`.
   - **WP-11:** stage-related problems should also go into HS's debug report (`RegisterStageChecksEvent`).
   - **WP-13:** a pack's `model` field is parsed and kept but not used. All packs use the tinted flask.
-  - **WP-10/13:** the creative tab only lists newly synced packs after the tab is rebuilt (rejoin or a
-    change of operator status). A refresh on `PackSyncPayload` would fix that.
+  - **WP-13:** the creative tab only lists newly synced packs after the tab is rebuilt (rejoin or a
+    change of operator status). A refresh on `PackSyncPayload` would fix that. (Not done in WP-10.)
 - WP-07 decision to confirm: when a tech source supplies an id that a file already defines, the later one
   wins (files, then addon sources, then KubeJS) with an `overridden` warning. D3 gives the order but not
   whether later sources replace or only add.
@@ -77,10 +78,9 @@ reshaped or deleted by the WP named.
   - **WP-07a design addition to confirm:** templates declare typed params in a `declare` block. §8.6
     named typed params but showed no place to declare them.
 - WP-08 left for later:
-  - **WP-10:** queue editing by players: `StageGraph.state == REACHABLE` plus `checkRequirements` before
-    enqueue (§4.3, CLAUDE.md), `queue_permission`, and showing BLOCKED technologies so players re-add
-    them (D32). `ResearchManager.enqueue` already checks existence, researched and the
-    `BeforeEnqueue` veto.
+  - **WP-10, done:** queue editing by players (`QueueEditPayload`, `ResearchManager.enqueueBy`):
+    `StageGraph.state == REACHABLE` plus `checkRequirements`, `queue_permission`, BLOCKED technologies
+    listed in red so players re-add them (D32).
   - **WP-11:** `/hslabs` commands for admins: forget an owner (`ResearchManager.forgetOwner`), add
     progress, list pending and blocked, and release reserved units (§4.2).
   - **WP-07 validation, now possible:** warn when a technology's stage scope does not fit
@@ -92,18 +92,26 @@ reshaped or deleted by the WP named.
   - **GameTests:** mock players fire join events that KubeJS answers with a client packet, so tests
     avoid them.
 - WP-09 left for later:
-  - **WP-10:** the basic lab has no screen yet, and the prototype `research_lab` block (with its screen)
-    is still there. WP-10 builds the real lab screen on Mekanism's GUI classes (D22 hybrid) and then
-    removes the prototype lab, recipe and sample items.
-  - **WP-10:** an energy item slot (charge from batteries) and the side config on the basic lab: reuse
-    the prototype `mek/config` and `UpgradeComponent` with its install timer.
+  - **WP-10, done:** the lab screen on Mekanism's GUI classes, the energy item slot, and removal of the
+    prototype lab, recipe and sample items.
+  - **WP-10 follow-up (still open):** side config on the basic lab (Items / Energy tabs, Configurator,
+    auto-eject). Mekanism's `GuiSideConfigurationTab` needs its tile base (D22), so the side config is
+    our own: `mek/config` is kept; restore `PortOverlayRenderer`, `CycleFacePayload` and the side-config
+    part of `ResearchLabScreen` from git history (before WP-10 (4/n)). The same goes for
+    `UpgradeComponent`'s install timer: the basic lab applies its upgrade cards at once today.
   - **WP-15:** the basic lab does not expose the api role capabilities (CONTROLLER, CONSUMER, WORKER)
     yet; networks need them.
   - **WP-16:** Mekanism upgrade cards apply inside the lab; §5.8 wants them as registered modifiers like
     any other.
   - **Not handled yet:** a lab type reload that changes `item_slots` reaches placed labs only when they
     load; until then they keep their slot count.
-- WP-09 did not build D28's tier data. Tiers work as plain integers (lab types, `min_tier`, effective
-  tier). Still to do: `data/<ns>/hstg_labs/lab_tier/<level>.json` with name, colour and icon, defaults
-  reusing Mekanism's Basic/Advanced/Elite/Ultimate. Nothing reads them until a screen shows tiers, so
-  this goes to WP-10 (lab screen) or WP-13 (dev UI ladder view).
+- D28 tier data is done (WP-10): `data/<ns>/hstg_labs/lab_tier/<level>.json`, synced in the tech
+  snapshot, shown in the lab screen. WP-13's dev UI ladder view should show the same labels, and
+  validation could warn about a `min_tier` or lab type tier that has no `lab_tier` file.
+- WP-10 left for later:
+  - The lab screen lists technologies as text rows (D9: a list, not a tree). The unlock preview
+    (first 8 items) is in the snapshot but not drawn yet; a hover tooltip over the list needs a custom
+    `GuiScrollList` subclass.
+  - A player sees their own owner's queue in any lab. In a lab of another owner the screen says
+    "Researches for another owner" and disables editing; it does not show that owner's queue.
+  - `LabStatusPayload` goes out every 5 ticks per open screen even when nothing changed.
