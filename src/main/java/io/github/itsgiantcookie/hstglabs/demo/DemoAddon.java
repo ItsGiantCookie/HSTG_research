@@ -116,10 +116,11 @@ public final class DemoAddon {
               """).getAsJsonObject();
     }
 
+    /** A worker lab type in the data format (docs/design.md §5.5), carrying the demo's own lab tag. */
     private static JsonObject demoLabType() {
-        JsonObject lab = new JsonObject();
-        lab.addProperty("tier", 1);
-        return lab;
+        return com.google.gson.JsonParser.parseString("""
+              { "roles": ["worker", "node"], "tier": 1, "speed": 1.5, "tags": ["hstg_labs:demo_tag"] }
+              """).getAsJsonObject();
     }
 
     /** Ingredient type: one exact item. */

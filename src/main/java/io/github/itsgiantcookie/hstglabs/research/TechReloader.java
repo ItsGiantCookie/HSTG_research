@@ -95,9 +95,17 @@ public final class TechReloader {
         return rl != null && ApiRegistries.TEMPLATE_KINDS.contains(rl);
     }
 
-    /** Lab types for validation. Empty until the lab type loader exists (WP-09). */
-    public static List<LabTypeModel> labTypes() {
-        return List.of();
+    private static volatile java.util.function.Function<java.util.Collection<String>, java.util.Collection<LabTypeModel>> labTypes =
+          stages -> List.of();
+
+    /** Lab types for validation, built from the technologies' stages (set by the lab package, WP-09). */
+    public static void setLabTypes(java.util.function.Function<java.util.Collection<String>, java.util.Collection<LabTypeModel>> source) {
+        labTypes = source;
+    }
+
+    /** Lab types for validation, for these technology stages. */
+    public static java.util.Collection<LabTypeModel> labTypes(java.util.Collection<String> stages) {
+        return labTypes.apply(stages);
     }
 
     public static TechRepository.Snapshot reload(MinecraftServer server, String cause) {
@@ -108,7 +116,7 @@ public final class TechReloader {
         } catch (IOException e) {
             LOGGER.error("cannot create {}: {}", dir, e.getMessage());
         }
-        TechRepository.Snapshot snapshot = TechRepository.load(dir, types(), HsStageCatalog::find, labTypes());
+        TechRepository.Snapshot snapshot = TechRepository.load(dir, types(), HsStageCatalog::find, labTypes);
         current = snapshot;
         lastLoadTick = server.getTickCount();
         PackLookup.setServer(snapshot.packs());
@@ -121,7 +129,7 @@ public final class TechReloader {
         }
         LOGGER.info("Loaded {} technologies ({} definitions, {} errors) and {} science packs from {} ({})", snapshot.technologies().size(),
               snapshot.definitions().size(), snapshot.errors(), snapshot.packs().size(), dir, cause);
-        NeoForge.EVENT_BUS.post(new TechDefinitionsReloadedEvent(snapshot.technologies().size(), labTypes().size()));
+        NeoForge.EVENT_BUS.post(new TechDefinitionsReloadedEvent(snapshot.technologies().size(), labTypes(List.of()).size()));
         return snapshot;
     }
 }

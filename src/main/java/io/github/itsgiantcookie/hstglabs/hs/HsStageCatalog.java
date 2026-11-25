@@ -24,6 +24,29 @@ public final class HsStageCatalog {
         return entry == null ? Optional.empty() : Optional.of(new StageModel(stageId, entry.getMode() == StageMode.EXTERNAL));
     }
 
+    /** Stands for a locking stage that no technology owns (HS's api gives entries, not their ids). */
+    public static final String OTHER_STAGE = "<a stage no technology owns>";
+
+    /**
+     * Which stages lock the item {@code itemId} (by plain item id, docs/design.md §8.3 ladder checks).
+     * {@code knownStages} are the stage ids we can name (the technologies' stages); any further locking
+     * stage is reported as {@link #OTHER_STAGE}.
+     */
+    public static java.util.Set<String> stagesLockingItem(String itemId, java.util.Collection<String> knownStages) {
+        java.util.Set<String> out = new java.util.TreeSet<>();
+        for (String stage : knownStages) {
+            StageEntry entry = StageStates.findStage(stage);
+            if (entry != null && entry.getItems().contains(itemId)) {
+                out.add(stage);
+            }
+        }
+        long locking = StageStates.loadedStages().stream().filter(e -> e.getItems().contains(itemId)).count();
+        if (locking > out.size()) {
+            out.add(OTHER_STAGE);
+        }
+        return out;
+    }
+
     /** Runs {@code onChange} on the server thread whenever HS reloads its stage definitions. */
     public static void onDefinitionsChanged(Runnable onChange) {
         NeoForge.EVENT_BUS.addListener(StageDefinitionsChangedEvent.class, event -> onChange.run());

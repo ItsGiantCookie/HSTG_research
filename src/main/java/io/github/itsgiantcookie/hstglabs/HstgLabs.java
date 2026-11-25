@@ -18,6 +18,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import io.github.itsgiantcookie.hstglabs.compat.ftbteams.FtbTeamsCompat;
 import io.github.itsgiantcookie.hstglabs.gametest.TestTeams;
+import io.github.itsgiantcookie.hstglabs.lab.LabTypes;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
@@ -44,6 +45,9 @@ public final class HstgLabs {
         ChemicalIngredientType.register(modBus);
         modBus.addListener(PackSyncPayload::register);
         TechReloader.register();
+        // WP-09: lab types as data (D17), and validation sees them
+        LabTypes.register(() -> TechReloader.configDir().resolve("lab_types"), ApiRegistries.LAB_TYPE_SOURCES::values);
+        TechReloader.setLabTypes(LabTypes::models);
         // WP-08: owners, the research manager, and History Stages through the hs bridge only
         boolean ftbTeams = ModList.get().isLoaded(FtbTeamsCompat.MOD_ID);
         BuiltInOwners.register(modBus, !ftbTeams);

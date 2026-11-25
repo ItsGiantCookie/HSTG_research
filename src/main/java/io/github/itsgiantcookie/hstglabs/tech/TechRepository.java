@@ -78,6 +78,15 @@ public final class TechRepository {
     }
 
     public static Snapshot load(Path configDir, TechTypes types, Function<String, Optional<StageModel>> stages, Collection<LabTypeModel> labTypes) {
+        return load(configDir, types, stages, techStages -> labTypes);
+    }
+
+    /**
+     * As above, with lab types built from the technologies' stages, so the ladder checks know which of
+     * those stages lock each lab block (§8.3).
+     */
+    public static Snapshot load(Path configDir, TechTypes types, Function<String, Optional<StageModel>> stages,
+          Function<Collection<String>, Collection<LabTypeModel>> labTypes) {
         List<Problem> problems = new ArrayList<>();
         Map<String, Map<String, TemplateEngine.Origin>> origins = new LinkedHashMap<>();
 
@@ -162,7 +171,8 @@ public final class TechRepository {
             resolution.model().ifPresent(models::add);
         }
 
-        TechValidator.Result validation = TechValidator.validate(models, labTypes, stages);
+        TechValidator.Result validation = TechValidator.validate(models,
+              labTypes.apply(models.stream().map(TechModel::stage).distinct().toList()), stages);
         problems.addAll(validation.problems());
         Map<ResourceLocation, Technology> enabled = new LinkedHashMap<>();
         resolved.forEach((id, tech) -> {

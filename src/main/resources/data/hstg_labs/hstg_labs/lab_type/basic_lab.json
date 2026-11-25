@@ -1,0 +1,11 @@
+{
+  "roles": ["controller", "consumer", "worker"],
+  "tier": 1,
+  "speed": 1.0,
+  "parallel": 1,
+  "energy_per_tick": 20,
+  "energy_capacity": 40000,
+  "item_slots": 4,
+  "accepts": ["hstg_labs:item", "hstg_labs:tag", "hstg_labs:pack"],
+  "upgrades": ["speed", "energy"]
+}
