@@ -24,6 +24,8 @@ import mekanism.client.gui.element.progress.GuiProgress;
 import mekanism.client.gui.element.progress.IProgressInfoHandler;
 import mekanism.client.gui.element.progress.ProgressType;
 import mekanism.client.gui.element.scroll.GuiTextScrollList;
+import mekanism.client.gui.element.slot.GuiSlot;
+import mekanism.client.gui.element.slot.SlotType;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -64,6 +66,16 @@ public class LabScreen extends GuiMekanism<BasicLabMenu> {
 
     private Optional<LabStatusPayload> status() {
         return ClientResearch.lab(menu.containerId);
+    }
+
+    /** Mekanism slot frames behind our slots; the energy slot gets the power frame. */
+    @Override
+    protected void addSlots() {
+        for (int i = 0; i < menu.slots.size(); i++) {
+            net.minecraft.world.inventory.Slot slot = menu.slots.get(i);
+            SlotType type = i == menu.energySlot() ? SlotType.POWER : SlotType.NORMAL;
+            addRenderableWidget(new GuiSlot(type, this, slot.x - 1, slot.y - 1));
+        }
     }
 
     @Override

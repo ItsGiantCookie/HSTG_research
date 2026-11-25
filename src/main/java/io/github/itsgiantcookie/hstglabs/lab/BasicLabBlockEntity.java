@@ -83,6 +83,18 @@ public class BasicLabBlockEntity extends BlockEntity {
             setChanged();
         }
     };
+    /** Charges the lab from a Mekanism energy item (battery, cube, tablet) or an FE item. */
+    private final ItemStackHandler energyItem = new ItemStackHandler(1) {
+        @Override
+        public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+            return isEnergyItem(stack);
+        }
+
+        @Override
+        protected void onContentsChanged(int slot) {
+            setChanged();
+        }
+    };
     private final Arbiter<Technology.Ingredient> arbiter = new Arbiter<>();
     private final List<WorkerSlot<ResourceLocation, Technology.Ingredient>> slots = new ArrayList<>();
     /** Per worker slot: the exact stacks its running unit consumed, so a cancelled unit gives back the same items. */
@@ -140,6 +152,42 @@ public class BasicLabBlockEntity extends BlockEntity {
 
     public ItemStackHandler upgrades() {
         return upgrades;
+    }
+
+    public ItemStackHandler energyItem() {
+        return energyItem;
+    }
+
+    public static boolean isEnergyItem(ItemStack stack) {
+        return stack.getCapability(io.github.itsgiantcookie.hstglabs.ModCapabilities.STRICT_ENERGY_ITEM) != null
+              || stack.getCapability(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.ITEM) != null;
+    }
+
+    /** Moves energy from the item in the energy slot into the lab, Joules first, else FE at {@link #JOULES_PER_FE}. */
+    void chargeFromItem() {
+        ItemStack stack = energyItem.getStackInSlot(0);
+        long room = energyCapacity() - energy;
+        if (stack.isEmpty() || room <= 0) {
+            return;
+        }
+        mekanism.api.energy.IStrictEnergyHandler joules = stack.getCapability(io.github.itsgiantcookie.hstglabs.ModCapabilities.STRICT_ENERGY_ITEM);
+        if (joules != null) {
+            long got = joules.extractEnergy(room, mekanism.api.Action.EXECUTE);
+            if (got > 0) {
+                energy += got;
+                setChanged();
+            }
+            return;
+        }
+        net.neoforged.neoforge.energy.IEnergyStorage fe = stack.getCapability(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.ITEM);
+        if (fe != null) {
+            int want = (int) Math.min(Integer.MAX_VALUE, (long) Math.floor(room / JOULES_PER_FE));
+            int got = fe.extractEnergy(want, false);
+            if (got > 0) {
+                energy = Math.min(energyCapacity(), energy + Math.round(got * JOULES_PER_FE));
+                setChanged();
+            }
+        }
     }
 
     public long energy() {
@@ -228,6 +276,7 @@ public class BasicLabBlockEntity extends BlockEntity {
         ResearchBook<ResourceLocation> book = m.book(owner);
         restoreSlots(book);
         ensureSlots(type.get().parallel());
+        chargeFromItem();
 
         ResourceLocation head = book.queue().head().orElse(null);
         long perTick = energyPerTick();
@@ -350,6 +399,8 @@ public class BasicLabBlockEntity extends BlockEntity {
             toDrop.add(upgrades.getStackInSlot(i).copy());
             upgrades.setStackInSlot(i, ItemStack.EMPTY);
         }
+        toDrop.add(energyItem.getStackInSlot(0).copy());
+        energyItem.setStackInSlot(0, ItemStack.EMPTY);
         toDrop.removeIf(ItemStack::isEmpty);
         dropPending();
     }
@@ -560,6 +611,7 @@ public class BasicLabBlockEntity extends BlockEntity {
         }
         tag.put("items", items.serializeNBT(registries));
         tag.put("upgrades", upgrades.serializeNBT(registries));
+        tag.put("energy_item", energyItem.serializeNBT(registries));
         tag.putLong("energy", energy);
         ListTag saved = new ListTag();
         for (int i = 0; i < slots.size(); i++) {
@@ -612,6 +664,9 @@ public class BasicLabBlockEntity extends BlockEntity {
             }
         }
         upgrades.deserializeNBT(registries, tag.getCompound("upgrades"));
+        if (tag.contains("energy_item")) {
+            energyItem.deserializeNBT(registries, tag.getCompound("energy_item"));
+        }
         energy = tag.getLong("energy");
         savedSlots = new CompoundTag();
         savedSlots.put("list", tag.getList("slots", Tag.TAG_COMPOUND).copy());

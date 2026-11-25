@@ -29,6 +29,10 @@ public class BasicLabMenu extends AbstractContainerMenu {
     /** Item position of the first lab slot; slots run in rows of {@link #ROW}. */
     public static final int ITEMS_X = 25, ITEMS_Y = 19, ROW = 6, MAX_ITEM_SLOTS = 12;
     public static final int UPGRADES_X = 25, UPGRADES_Y = 59;
+    /** Below the energy bar. */
+    public static final int ENERGY_X = 6, ENERGY_Y = 73;
+    /** Upgrade slots and the energy slot, after the lab's item slots. */
+    public static final int EXTRA_SLOTS = 3;
     public static final int INVENTORY_X = 48, INVENTORY_Y = 158;
     public static final int STATUS_INTERVAL = 5;
 
@@ -41,15 +45,17 @@ public class BasicLabMenu extends AbstractContainerMenu {
 
     /** Server side. */
     public BasicLabMenu(int id, Inventory inventory, BasicLabBlockEntity lab) {
-        this(id, inventory, lab.getBlockPos(), lab.items(), lab.upgrades(), lab);
+        this(id, inventory, lab.getBlockPos(), lab.items(), lab.upgrades(), lab.energyItem(), lab);
     }
 
     /** Client side: the server wrote the position and slot count ({@link #writeOpenData}). */
     public BasicLabMenu(int id, Inventory inventory, RegistryFriendlyByteBuf buf) {
-        this(id, inventory, buf.readBlockPos(), new ItemStackHandler(Math.min(MAX_ITEM_SLOTS, buf.readVarInt())), new ItemStackHandler(2), null);
+        this(id, inventory, buf.readBlockPos(), new ItemStackHandler(Math.min(MAX_ITEM_SLOTS, buf.readVarInt())), new ItemStackHandler(2), new ItemStackHandler(1),
+              null);
     }
 
-    private BasicLabMenu(int id, Inventory inventory, BlockPos pos, IItemHandler items, IItemHandler upgrades, @Nullable BasicLabBlockEntity lab) {
+    private BasicLabMenu(int id, Inventory inventory, BlockPos pos, IItemHandler items, IItemHandler upgrades, IItemHandler energyItem,
+          @Nullable BasicLabBlockEntity lab) {
         super(Registration.BASIC_LAB_MENU.get(), id);
         this.pos = pos;
         this.lab = lab;
@@ -61,6 +67,7 @@ public class BasicLabMenu extends AbstractContainerMenu {
         for (int i = 0; i < 2; i++) {
             addSlot(new SlotItemHandler(upgrades, i, UPGRADES_X + i * 18, UPGRADES_Y));
         }
+        addSlot(new SlotItemHandler(energyItem, 0, ENERGY_X, ENERGY_Y));
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) {
                 addSlot(new Slot(inventory, col + row * 9 + 9, INVENTORY_X + col * 18, INVENTORY_Y + row * 18));
@@ -104,7 +111,12 @@ public class BasicLabMenu extends AbstractContainerMenu {
         }
     }
 
-    /** Shift-click: lab slots go to the inventory; inventory items go to the upgrade slots first, then the lab slots. */
+    /** The menu index of the energy slot. */
+    public int energySlot() {
+        return itemSlots + 2;
+    }
+
+    /** Shift-click: lab slots go to the inventory; inventory items go to the upgrade and energy slots first, then the lab slots. */
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         Slot slot = slots.get(index);
@@ -113,7 +125,7 @@ public class BasicLabMenu extends AbstractContainerMenu {
         }
         ItemStack stack = slot.getItem();
         ItemStack copy = stack.copy();
-        int labEnd = itemSlots + 2;
+        int labEnd = itemSlots + EXTRA_SLOTS;
         if (index < labEnd) {
             if (!moveItemStackTo(stack, labEnd, slots.size(), true)) {
                 return ItemStack.EMPTY;
