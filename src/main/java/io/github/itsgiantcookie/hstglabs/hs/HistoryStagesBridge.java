@@ -6,7 +6,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import net.bananemdnsa.historystages.api.dependency.RequirementResult;
 import net.bananemdnsa.historystages.api.stage.StageEvent;
+import net.bananemdnsa.historystages.api.stage.StageGraph;
+import net.bananemdnsa.historystages.api.stage.StageRef;
 import net.bananemdnsa.historystages.api.stage.StageScope;
 import net.bananemdnsa.historystages.api.stage.StageStates;
 import net.minecraft.server.MinecraftServer;
@@ -80,6 +83,26 @@ public final class HistoryStagesBridge implements StageBridge {
     @Override
     public boolean unlockIndividual(String stage, UUID player, MinecraftServer server) {
         return StageStates.unlockIndividual(stage, player, server);
+    }
+
+    @Override
+    public QueueCheck canQueue(String stage, ServerPlayer player) {
+        StageRef ref = StageRef.of(stage);
+        if (ref == null) {
+            return QueueCheck.UNKNOWN_STAGE;
+        }
+        StageGraph.Node node = StageGraph.state(ref, player);
+        if (node == StageGraph.Node.UNLOCKED) {
+            return QueueCheck.ALREADY_UNLOCKED;
+        }
+        if (node != StageGraph.Node.REACHABLE) {
+            return QueueCheck.PREREQUISITES_MISSING;
+        }
+        RequirementResult requirements = StageStates.checkRequirements(stage, player);
+        if (requirements != null && !requirements.isFulfilled()) {
+            return QueueCheck.REQUIREMENTS_UNMET;
+        }
+        return QueueCheck.OK;
     }
 
     // ---- GameTest setup only (CLAUDE.md: admin paths only in command/ and GameTest setup) ----

@@ -24,9 +24,27 @@ public interface StageBridge {
     /** As {@link #unlockGlobal} for one player, online or offline (offline: synced at next login). */
     boolean unlockIndividual(String stage, UUID player, MinecraftServer server);
 
+    /**
+     * Whether {@code player} may queue research for {@code stage} (§4.3, CLAUDE.md): HS's graph says
+     * REACHABLE and the stage's other requirements are met. {@code unlockGlobal} does not check
+     * dependency groups, so this is our gate.
+     */
+    QueueCheck canQueue(String stage, net.minecraft.server.level.ServerPlayer player);
+
     enum Scope {
         GLOBAL,
         INDIVIDUAL
+    }
+
+    /** Outcome of {@link #canQueue}. */
+    enum QueueCheck {
+        OK,
+        UNKNOWN_STAGE,
+        ALREADY_UNLOCKED,
+        /** Prerequisite stages are missing (HS graph: LOCKED or BLOCKED). */
+        PREREQUISITES_MISSING,
+        /** Other requirements (items, XP, …) are not met. */
+        REQUIREMENTS_UNMET
     }
 
     /** Stage changes HS reports, forwarded by the hs package. */

@@ -144,7 +144,55 @@ public final class ResearchManager {
         FULL,
         UNKNOWN_TECHNOLOGY,
         ALREADY_RESEARCHED,
-        VETOED
+        VETOED,
+        NO_PERMISSION,
+        PREREQUISITES_MISSING,
+        REQUIREMENTS_UNMET
+    }
+
+    /**
+     * A player queues research for their owner (§4.3): {@code queue_permission}, then HS's graph must
+     * say REACHABLE and the stage's other requirements must be met (CLAUDE.md: {@code unlockGlobal}
+     * does not check dependency groups, so this is the gate), then {@link #enqueue}.
+     */
+    public EnqueueResult enqueueBy(ServerPlayer player, ResourceLocation tech) {
+        if (LabsConfig.queuePermission() == LabsConfig.QueuePermission.OPS && !player.hasPermissions(2)) {
+            return EnqueueResult.NO_PERMISSION;
+        }
+        Technology technology = technology(tech).orElse(null);
+        if (technology == null) {
+            return EnqueueResult.UNKNOWN_TECHNOLOGY;
+        }
+        OwnerId owner = ownerOf(player);
+        if (!book(owner).queue().contains(tech)) {
+            switch (bridge.canQueue(technology.stage(), player)) {
+                case UNKNOWN_STAGE -> {
+                    return EnqueueResult.UNKNOWN_TECHNOLOGY;
+                }
+                case ALREADY_UNLOCKED -> {
+                    return EnqueueResult.ALREADY_RESEARCHED;
+                }
+                case PREREQUISITES_MISSING -> {
+                    return EnqueueResult.PREREQUISITES_MISSING;
+                }
+                case REQUIREMENTS_UNMET -> {
+                    return EnqueueResult.REQUIREMENTS_UNMET;
+                }
+                case OK -> {
+                }
+            }
+        }
+        return enqueue(owner, tech);
+    }
+
+    /** Removes a technology from the owner's queue; running units still finish and count. */
+    public boolean dequeue(OwnerId owner, ResourceLocation tech) {
+        boolean removed = book(owner).queue().remove(tech);
+        if (removed) {
+            data().setDirty();
+            NeoForge.EVENT_BUS.post(new ResearchEvent.QueueChanged(owner, tech));
+        }
+        return removed;
     }
 
     /**

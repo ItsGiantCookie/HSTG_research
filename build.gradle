@@ -227,6 +227,15 @@ def copyHsFixtures = tasks.register('copyHsFixtures', Copy) {
     exclude 'README.md'
     into 'run/config/historystages'
 }
+// Dev playtest content (testpack/dev): a stage and a technology for runClient / runServer worlds.
+def copyDevContent = tasks.register('copyDevContent', Copy) {
+    from 'testpack/dev'
+    exclude 'README.md'
+    into 'run/config'
+}
+tasks.matching { it.name == 'runClient' || it.name == 'runServer' }.configureEach {
+    dependsOn copyDevContent, copyHsFixtures
+}
 tasks.matching { it.name == 'runGameTestServer' }.configureEach {
     dependsOn copyHsFixtures
 }

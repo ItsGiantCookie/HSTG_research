@@ -1,0 +1,8 @@
+{
+  "stage": "hstg_dev_paper",
+  "cost": {
+    "units": 5,
+    "unit_time": 100,
+    "ingredients": [ { "type": "hstg_labs:item", "item": "minecraft:paper", "amount": 1 } ]
+  }
+}

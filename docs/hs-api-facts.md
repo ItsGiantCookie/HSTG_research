@@ -151,3 +151,11 @@ No team id in the HS api (confirms D31: key teams by the FTB Teams UUID).
 | Refusals in `unlockGlobal` | unknown, already unlocked, lost (`LostStages.isLostGlobal`), logic block (`StageLogicGate`), veto (`BeforeUnlock`) | `api/stage/StageStates.java:266-279` | Every refusal returns `false`; we treat all of them as BLOCKED (D32) |
 | Offline individual unlock | `unlockIndividual(String, UUID, MinecraftServer)`: online → the player overload; offline → written + synced at next login | `api/stage/StageStates.java:375-378` | Used for team members who are offline (§5.10) |
 | Stage files (GameTest fixtures only) | `config/historystages/global/<id>.json` and `individual/<id>.json`; fields `display_name`, `mode` (`"external"`), `share_with_team`; missing lists default to empty | `ConfigHandler.java:17-30`, `data/StageEntry.java:37-40, 149, 246-247` | We never write HS config at runtime; `testpack/hs-fixtures` holds our own minimal files, copied by Gradle before GameTests |
+
+## WP-09 follow-up: queueing gate (`HistoryStagesBridge.canQueue`)
+
+| Need | Signature | Where | Notes |
+| --- | --- | --- | --- |
+| Stage reference | `@Nullable public static StageRef of(String stageId)` | `api/stage/StageRef.java:14` | Null for an unknown id |
+| Graph state | `StageGraph.state(StageRef, ServerPlayer)` → `Node.UNLOCKED / REACHABLE / BLOCKED / LOCKED` | `api/stage/StageGraph.java:32-39, 65` | We queue only on `REACHABLE` (CLAUDE.md) |
+| Other requirements | `checkRequirements(stage, player)` → `@Nullable RequirementResult`; `isFulfilled()` | `api/stage/StageStates.java:209-216`, `api/dependency/RequirementResult.java:15` | Pedestal-deposited items/XP read as unmet (javadoc 203-207) |

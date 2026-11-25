@@ -49,6 +49,10 @@ public final class LabsConfig {
         return SPEC.isLoaded() ? QUEUE_MAX.get() : QUEUE_MAX.getDefault();
     }
 
+    static QueuePermission queuePermission() {
+        return SPEC.isLoaded() ? QUEUE_PERMISSION.get() : QUEUE_PERMISSION.getDefault();
+    }
+
     static OnRelock onRelock() {
         return SPEC.isLoaded() ? ON_RELOCK.get() : ON_RELOCK.getDefault();
     }

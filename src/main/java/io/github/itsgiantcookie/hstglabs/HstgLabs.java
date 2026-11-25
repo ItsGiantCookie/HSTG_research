@@ -16,6 +16,7 @@ import io.github.itsgiantcookie.hstglabs.research.LabsConfig;
 import io.github.itsgiantcookie.hstglabs.research.ResearchManager;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
+import io.github.itsgiantcookie.hstglabs.command.HsLabsCommand;
 import io.github.itsgiantcookie.hstglabs.compat.ftbteams.FtbTeamsCompat;
 import io.github.itsgiantcookie.hstglabs.gametest.TestTeams;
 import io.github.itsgiantcookie.hstglabs.lab.LabTypes;
@@ -59,6 +60,7 @@ public final class HstgLabs {
         }
         ResearchManager.register(HistoryStagesBridge.INSTANCE);
         HistoryStagesBridge.listen(ResearchManager.stageListener());
+        HsLabsCommand.register();
         if (DemoAddon.enabled()) {
             DemoAddon.register(modBus);
         }
