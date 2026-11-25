@@ -31,6 +31,21 @@ public interface StageBridge {
      */
     QueueCheck canQueue(String stage, net.minecraft.server.level.ServerPlayer player);
 
+    /** What the lab screen shows about a stage for one player (§4.4, §4.5), or empty if HS has no such stage. */
+    Optional<StageInfo> info(String stage, net.minecraft.server.level.ServerPlayer player);
+
+    /**
+     * @param displayName   HS's display name for this player
+     * @param icon          icon item id, empty if unset
+     * @param items         item ids the stage locks (plain ids)
+     * @param recipes       recipe ids the stage locks
+     * @param prerequisites stage ids it requires (HS graph edges)
+     * @param queue         whether the player may queue it now
+     */
+    record StageInfo(String displayName, String icon, java.util.List<String> items, java.util.List<String> recipes,
+          java.util.List<String> prerequisites, QueueCheck queue) {
+    }
+
     enum Scope {
         GLOBAL,
         INDIVIDUAL

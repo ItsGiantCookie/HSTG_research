@@ -1,0 +1,5 @@
+{
+  "display_name": "HSTG test: queue locked",
+  "mode": "external",
+  "dependencies": [ { "logic": "AND", "stages": ["hstg_test_queue_base"] } ]
+}

@@ -1,6 +1,7 @@
 package io.github.itsgiantcookie.hstglabs.hs;
 
 import io.github.itsgiantcookie.hstglabs.research.StageBridge;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -103,6 +104,17 @@ public final class HistoryStagesBridge implements StageBridge {
             return QueueCheck.REQUIREMENTS_UNMET;
         }
         return QueueCheck.OK;
+    }
+
+    @Override
+    public Optional<StageInfo> info(String stage, ServerPlayer player) {
+        StageRef ref = StageRef.of(stage);
+        net.bananemdnsa.historystages.data.StageEntry entry = StageStates.findStage(stage);
+        if (ref == null || entry == null) {
+            return Optional.empty();
+        }
+        return Optional.of(new StageInfo(StageStates.displayNameFor(stage, player), entry.getIcon(), List.copyOf(entry.getItems()),
+              List.copyOf(entry.getRecipes()), StageGraph.requires(ref).stream().map(StageRef::id).toList(), canQueue(stage, player)));
     }
 
     // ---- GameTest setup only (CLAUDE.md: admin paths only in command/ and GameTest setup) ----

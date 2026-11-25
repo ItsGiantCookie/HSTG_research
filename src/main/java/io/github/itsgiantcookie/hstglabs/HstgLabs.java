@@ -17,6 +17,9 @@ import io.github.itsgiantcookie.hstglabs.research.ResearchManager;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
 import io.github.itsgiantcookie.hstglabs.command.HsLabsCommand;
+import io.github.itsgiantcookie.hstglabs.packet.QueueEditPayload;
+import io.github.itsgiantcookie.hstglabs.packet.SnapshotSync;
+import io.github.itsgiantcookie.hstglabs.packet.TechSnapshotPayload;
 import io.github.itsgiantcookie.hstglabs.compat.ftbteams.FtbTeamsCompat;
 import io.github.itsgiantcookie.hstglabs.gametest.TestTeams;
 import io.github.itsgiantcookie.hstglabs.lab.LabTypes;
@@ -61,6 +64,10 @@ public final class HstgLabs {
         ResearchManager.register(HistoryStagesBridge.INSTANCE);
         HistoryStagesBridge.listen(ResearchManager.stageListener());
         HsLabsCommand.register();
+        // WP-10: research snapshots to clients, queue edits from clients
+        modBus.addListener(TechSnapshotPayload::register);
+        modBus.addListener(QueueEditPayload::register);
+        SnapshotSync.register();
         if (DemoAddon.enabled()) {
             DemoAddon.register(modBus);
         }

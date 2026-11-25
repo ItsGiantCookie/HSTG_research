@@ -156,7 +156,7 @@ public final class ResearchManager {
      * does not check dependency groups, so this is the gate), then {@link #enqueue}.
      */
     public EnqueueResult enqueueBy(ServerPlayer player, ResourceLocation tech) {
-        if (LabsConfig.queuePermission() == LabsConfig.QueuePermission.OPS && !player.hasPermissions(2)) {
+        if (!mayEditQueue(player)) {
             return EnqueueResult.NO_PERMISSION;
         }
         Technology technology = technology(tech).orElse(null);
@@ -183,6 +183,26 @@ public final class ResearchManager {
             }
         }
         return enqueue(owner, tech);
+    }
+
+    /** {@code queue_permission} (§4.3): anyone in the owning team, or operators only. */
+    public boolean mayEditQueue(ServerPlayer player) {
+        return LabsConfig.queuePermission() == LabsConfig.QueuePermission.ANYONE || player.hasPermissions(2);
+    }
+
+    /** Moves a queued technology to {@code index} (clamped). */
+    public boolean move(OwnerId owner, ResourceLocation tech, int index) {
+        boolean moved = book(owner).queue().move(tech, index);
+        if (moved) {
+            data().setDirty();
+            NeoForge.EVENT_BUS.post(new ResearchEvent.QueueChanged(owner, tech));
+        }
+        return moved;
+    }
+
+    /** What the screen shows about a stage for {@code player}. */
+    public Optional<StageBridge.StageInfo> stageInfo(String stage, ServerPlayer player) {
+        return bridge.info(stage, player);
     }
 
     /** Removes a technology from the owner's queue; running units still finish and count. */
