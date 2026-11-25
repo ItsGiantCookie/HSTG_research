@@ -19,7 +19,6 @@ public final class ClientSetup {
 
     @SubscribeEvent
     public static void registerScreens(RegisterMenuScreensEvent event) {
-        event.register(Registration.RESEARCH_LAB_MENU.get(), ResearchLabScreen::new);
         event.register(Registration.BASIC_LAB_MENU.get(), io.github.itsgiantcookie.hstglabs.mek.client.LabScreen::new);
     }
 

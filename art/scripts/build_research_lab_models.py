@@ -3,8 +3,8 @@
 Input : art/blockbench/research_lab.export.json  (Blockbench "Java Block/Item" export)
 Output: models/block/research_lab.json      (off / idle)
         models/block/research_lab_on.json   (active: animated front face)
-        models/item/research_lab.json
-        blockstates/research_lab.json       (facing x active, one north model rotated, MOD-08)
+        (WP-10: the prototype research_lab block is gone; these two block models are the shared lab
+        casing, wired up by gen_basic_lab_assets.py)
 
 Fixes applied to the raw export:
   - namespaced texture refs with readable keys (BB-30)
@@ -74,16 +74,6 @@ def build_on(base):
     return on
 
 
-def blockstate():
-    rot = {"north": 0, "east": 90, "south": 180, "west": 270}
-    variants = {}
-    for facing, y in rot.items():
-        for active, model in (("false", "research_lab"), ("true", "research_lab_on")):
-            v = {"model": f"{NS}:block/{model}"}
-            if y:
-                v["y"] = y
-            variants[f"active={active},facing={facing}"] = v
-    return {"variants": variants}
 
 
 def dump(path, data):
@@ -97,8 +87,6 @@ def main():
     base = build_base(raw)
     dump(ASSETS / "models/block/research_lab.json", base)
     dump(ASSETS / "models/block/research_lab_on.json", build_on(base))
-    dump(ASSETS / "models/item/research_lab.json", {"parent": f"{NS}:block/research_lab"})
-    dump(ASSETS / "blockstates/research_lab.json", blockstate())
 
 
 if __name__ == "__main__":

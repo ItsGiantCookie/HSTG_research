@@ -1,8 +1,6 @@
 """Generate the data-network assets for hstg_labs (mekstyle 1.2).
 
 Textures (own work unless noted):
-  item/research_sample.png       vial with sample, steel cap
-  item/empty_sample_vial.png     same silhouette, empty glass
   block/data_cable/<tier>.png    one sheet per tier from ONE accent mask (COL-11, COL-12)
   block/data_consumer/front.png  derived from research_lab/side.png (Mekanism casing) + own screen
 
@@ -46,8 +44,6 @@ TIERS = {
     "elite":    ["#156A70", "#22AEB5", "#4BF8FF", "#B0FCFF"],
     "ultimate": ["#6E2A74", "#B24FBC", "#F787FF", "#FCCBFF"],
 }
-# sample liquid: elite ramp (reads as "research", not as a tier: items carry no tier)
-LIQUID = ["#156A70", "#22AEB5", "#4BF8FF", "#B0FCFF"]
 GLASS_EDGE, GLASS, GLASS_HI = "#7F8C94", "#C3CDD2", "#E4EAED"
 
 
@@ -89,47 +85,6 @@ def cable_sheet(ramp):
     paint(img, ARM_ACROSS, pal, 0, 6)
     along = ["".join(ARM_ACROSS[c][r] for c in range(5)) for r in range(6)]  # transpose -> 5 x 6
     paint(img, along, pal, 6, 0)
-    return img
-
-
-# --- items ------------------------------------------------------------------
-VIAL = [  # c/C/k steel cap (lit, base, shadow), e/E glass edge (lit/dark side), g glass, w glint
-    "................",
-    ".....cccccc.....",
-    ".....CCCCCC.....",
-    ".....kkkkkk.....",
-    "......e..E......",
-    ".....ewgggE.....",
-    ".....ewgggE.....",
-    ".....ewgggE.....",
-    ".....eggggE.....",
-    ".....eggggE.....",
-    ".....eggggE.....",
-    ".....eggggE.....",
-    ".....eggggE.....",
-    ".....eggggE.....",
-    "......EEEE......",
-    "................",
-]
-SAMPLE_FILL = {  # rows 8..13 inside the glass (x 6..9); row 8 is the meniscus
-    8: "4433",
-    9: "3322",
-    10: "3222",
-    11: "2221",
-    12: "2211",
-    13: "1111",
-}
-
-
-def vial(filled):
-    pal = {"c": S6, "C": S5, "k": S3, "e": GLASS_EDGE, "E": S5, "g": GLASS, "w": GLASS_HI}
-    img = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
-    paint(img, VIAL, pal)
-    if filled:
-        tones = {"1": LIQUID[0], "2": LIQUID[1], "3": LIQUID[2], "4": LIQUID[3]}
-        for y, row in SAMPLE_FILL.items():
-            for i, ch in enumerate(row):
-                img.putpixel((6 + i, y), rgba(tones[ch]))
     return img
 
 
@@ -258,14 +213,8 @@ def consumer_json():
     write_json(ASSETS / "blockstates/data_consumer.json", {"variants": variants})
 
 
-def item_json():
-    for item in ("research_sample", "empty_sample_vial"):
-        write_json(ASSETS / f"models/item/{item}.json",
-                   {"parent": "minecraft:item/generated", "textures": {"layer0": f"{MODID}:item/{item}"}})
-
-
 def loot_and_tags():
-    blocks = ["research_lab", "data_consumer"] + [f"{t}_data_cable" for t in TIERS]
+    blocks = ["data_consumer"] + [f"{t}_data_cable" for t in TIERS]
     for block in blocks:
         write_json(RES / f"data/{MODID}/loot_table/blocks/{block}.json", {
             "type": "minecraft:block",
@@ -277,8 +226,6 @@ def loot_and_tags():
 
 def main():
     out = {
-        TEX / "item/research_sample.png": vial(True),
-        TEX / "item/empty_sample_vial.png": vial(False),
         TEX / "gui/data.png": data_icon(),
         TEX / "block/data_consumer/front.png": consumer_front(Image.open(TEX / "block/research_lab/side.png").convert("RGBA")),
     }
@@ -290,7 +237,6 @@ def main():
         print("wrote", path.relative_to(ROOT))
     cable_json()
     consumer_json()
-    item_json()
     loot_and_tags()
     lab.update_provenance({
         TEX / "block/data_consumer/front.png": ("research_lab/side.png",

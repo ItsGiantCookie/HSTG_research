@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "hstg_labs:item/empty_sample_vial"
-  }
-}

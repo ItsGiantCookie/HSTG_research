@@ -1,7 +1,6 @@
 {
   "values": [
     "hstg_labs:basic_lab",
-    "hstg_labs:research_lab",
     "hstg_labs:data_consumer",
     "hstg_labs:basic_data_cable",
     "hstg_labs:advanced_data_cable",

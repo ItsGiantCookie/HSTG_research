@@ -3,13 +3,11 @@ package io.github.itsgiantcookie.hstglabs;
 import io.github.itsgiantcookie.hstglabs.grid.IDataHandler;
 import io.github.itsgiantcookie.hstglabs.grid.DataCableBlockEntity;
 import io.github.itsgiantcookie.hstglabs.grid.DataConsumerBlockEntity;
-import io.github.itsgiantcookie.hstglabs.lab.ResearchLabBlockEntity;
 import mekanism.api.IConfigCardAccess;
 import mekanism.api.IConfigurable;
 import mekanism.api.energy.IStrictEnergyHandler;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.ItemCapability;
@@ -44,13 +42,6 @@ public final class ModCapabilities {
     }
 
     public static void register(RegisterCapabilitiesEvent event) {
-        BlockEntityType<ResearchLabBlockEntity> lab = Registration.RESEARCH_LAB_BE.get();
-        event.registerBlockEntity(STRICT_ENERGY, lab, ResearchLabBlockEntity::getEnergyHandler);
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, lab, ResearchLabBlockEntity::getItemHandler);
-        event.registerBlockEntity(DATA, lab, ResearchLabBlockEntity::getDataHandler);
-        event.registerBlockEntity(CONFIGURABLE, lab, ResearchLabBlockEntity::getConfigurable);
-        event.registerBlockEntity(CONFIG_CARD, lab, (be, side) -> be);
-
         // WP-09 basic lab: items from automation, Joules (Mekanism) and FE (D23)
         var basicLab = Registration.BASIC_LAB_BE.get();
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, basicLab, (be, side) -> be.items());

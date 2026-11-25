@@ -4,11 +4,7 @@ import io.github.itsgiantcookie.hstglabs.grid.DataCableBlock;
 import io.github.itsgiantcookie.hstglabs.grid.DataCableBlockEntity;
 import io.github.itsgiantcookie.hstglabs.grid.DataConsumerBlock;
 import io.github.itsgiantcookie.hstglabs.grid.DataConsumerBlockEntity;
-import io.github.itsgiantcookie.hstglabs.lab.ResearchLabBlock;
-import io.github.itsgiantcookie.hstglabs.lab.ResearchLabBlockEntity;
 import io.github.itsgiantcookie.hstglabs.grid.CableTier;
-import io.github.itsgiantcookie.hstglabs.lab.ResearchLabMenu;
-import io.github.itsgiantcookie.hstglabs.lab.ResearchRecipe;
 import java.util.EnumMap;
 import java.util.Map;
 import io.github.itsgiantcookie.hstglabs.tech.SciencePackItem;
@@ -23,8 +19,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -44,15 +38,8 @@ public final class Registration {
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
           DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, HstgLabs.MODID);
     private static final DeferredRegister<MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, HstgLabs.MODID);
-    private static final DeferredRegister<RecipeType<?>> RECIPE_TYPES = DeferredRegister.create(Registries.RECIPE_TYPE, HstgLabs.MODID);
-    private static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERS =
-          DeferredRegister.create(Registries.RECIPE_SERIALIZER, HstgLabs.MODID);
 
     // --- machines ---
-
-    public static final DeferredBlock<ResearchLabBlock> RESEARCH_LAB = BLOCKS.register("research_lab",
-          () -> new ResearchLabBlock(machineProperties()));
-    public static final DeferredItem<BlockItem> RESEARCH_LAB_ITEM = ITEMS.registerSimpleBlockItem(RESEARCH_LAB);
 
     /** Dummy data sink for testing the cable network. */
     public static final DeferredBlock<DataConsumerBlock> DATA_CONSUMER = BLOCKS.register("data_consumer",
@@ -78,18 +65,7 @@ public final class Registration {
         }
     }
 
-    // --- items ---
-
-    /** Dummy research input: consumed by the lab, turned into data. */
-    public static final DeferredItem<Item> RESEARCH_SAMPLE = ITEMS.registerSimpleItem("research_sample", new Item.Properties().stacksTo(16));
-    /** What is left of a sample after the lab has read it. */
-    public static final DeferredItem<Item> EMPTY_SAMPLE_VIAL = ITEMS.registerSimpleItem("empty_sample_vial");
-
     // --- block entities ---
-
-    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ResearchLabBlockEntity>> RESEARCH_LAB_BE =
-          BLOCK_ENTITIES.register("research_lab",
-                () -> BlockEntityType.Builder.of(ResearchLabBlockEntity::new, RESEARCH_LAB.get()).build(null));
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<DataConsumerBlockEntity>> DATA_CONSUMER_BE =
           BLOCK_ENTITIES.register("data_consumer",
@@ -102,17 +78,8 @@ public final class Registration {
 
     // --- menus ---
 
-    public static final DeferredHolder<MenuType<?>, MenuType<ResearchLabMenu>> RESEARCH_LAB_MENU =
-          MENUS.register("research_lab", () -> IMenuTypeExtension.create(ResearchLabMenu::new));
     public static final DeferredHolder<MenuType<?>, MenuType<io.github.itsgiantcookie.hstglabs.lab.BasicLabMenu>> BASIC_LAB_MENU =
           MENUS.register("basic_lab", () -> IMenuTypeExtension.create(io.github.itsgiantcookie.hstglabs.lab.BasicLabMenu::new));
-
-    // --- recipes ---
-
-    public static final DeferredHolder<RecipeType<?>, RecipeType<ResearchRecipe>> RESEARCH_RECIPE_TYPE =
-          RECIPE_TYPES.register("research", () -> RecipeType.simple(HstgLabs.rl("research")));
-    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<ResearchRecipe>> RESEARCH_RECIPE_SERIALIZER =
-          RECIPE_SERIALIZERS.register("research", ResearchRecipe.Serializer::new);
 
     // --- labs (WP-09, docs/design.md §5.2, §5.5) ---
 
@@ -154,7 +121,7 @@ public final class Registration {
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN_TAB = CREATIVE_TABS.register("main",
           () -> CreativeModeTab.builder()
                 .title(Component.translatable("itemGroup.hstg_labs"))
-                .icon(() -> new ItemStack(RESEARCH_LAB_ITEM.get()))
+                .icon(() -> new ItemStack(BASIC_LAB_ITEM.get()))
                 .displayItems((parameters, output) -> {
                     for (DeferredHolder<Item, ? extends Item> entry : ITEMS.getEntries()) {
                         if (entry.get() instanceof CreativeTabStacks variants) {
@@ -188,8 +155,6 @@ public final class Registration {
         ITEMS.register(modBus);
         BLOCK_ENTITIES.register(modBus);
         MENUS.register(modBus);
-        RECIPE_TYPES.register(modBus);
-        RECIPE_SERIALIZERS.register(modBus);
         DATA_COMPONENTS.register(modBus);
         CREATIVE_TABS.register(modBus);
     }

@@ -2,8 +2,6 @@ package io.github.itsgiantcookie.hstglabs;
 
 import io.github.itsgiantcookie.hstglabs.demo.DemoAddon;
 import io.github.itsgiantcookie.hstglabs.hs.HsVersion;
-import io.github.itsgiantcookie.hstglabs.packet.CycleFacePayload;
-import io.github.itsgiantcookie.hstglabs.packet.LabButtonPayload;
 import io.github.itsgiantcookie.hstglabs.research.ApiRegistries;
 import io.github.itsgiantcookie.hstglabs.research.BuiltInApi;
 import io.github.itsgiantcookie.hstglabs.research.TechReloader;
@@ -38,8 +36,6 @@ public final class HstgLabs {
         Registration.register(modBus);
         container.registerConfig(ModConfig.Type.SERVER, LabsConfig.SPEC);
         modBus.addListener(ModCapabilities::register);
-        modBus.addListener(CycleFacePayload::register);
-        modBus.addListener(LabButtonPayload::register);
         modBus.addListener((FMLCommonSetupEvent event) -> HsVersion.logAtStartup());
         // WP-06: our built-ins go through the public API like any addon; then the §9.2 registries
         // fire once, after parallel setup has returned, and freeze.

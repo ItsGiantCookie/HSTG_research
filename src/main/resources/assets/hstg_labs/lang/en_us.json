@@ -1,12 +1,9 @@
 {
-  "block.hstg_labs.research_lab": "Research Lab",
   "block.hstg_labs.data_consumer": "Data Consumer",
   "block.hstg_labs.basic_data_cable": "Basic Data Cable",
   "block.hstg_labs.advanced_data_cable": "Advanced Data Cable",
   "block.hstg_labs.elite_data_cable": "Elite Data Cable",
   "block.hstg_labs.ultimate_data_cable": "Ultimate Data Cable",
-  "item.hstg_labs.research_sample": "Research Sample",
-  "item.hstg_labs.empty_sample_vial": "Empty Sample Vial",
   "hstg_labs.configurator.view": "%s, %s face: %s",
   "hstg_labs.configurator.toggle": "%s, %s face set to %s",
   "hstg_labs.cable.capacity": "Capacity: %s data/t",
