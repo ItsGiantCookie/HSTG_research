@@ -103,3 +103,7 @@ reshaped or deleted by the WP named.
     any other.
   - **Not handled yet:** a lab type reload that changes `item_slots` reaches placed labs only when they
     load; until then they keep their slot count.
+- WP-09 did not build D28's tier data. Tiers work as plain integers (lab types, `min_tier`, effective
+  tier). Still to do: `data/<ns>/hstg_labs/lab_tier/<level>.json` with name, colour and icon, defaults
+  reusing Mekanism's Basic/Advanced/Elite/Ultimate. Nothing reads them until a screen shows tiers, so
+  this goes to WP-10 (lab screen) or WP-13 (dev UI ladder view).
